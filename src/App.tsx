@@ -29,8 +29,8 @@ export default function App() {
     
     let matchId = '';
     
-    // Mode A: Clean URL path (e.g., /verify/BD-AP-2026-12345)
-    const verifyMatch = path.match(/^\/verify\/([^/]+)/i);
+    // Mode A: Clean URL path (e.g., /verify/BD-AP-2026-12345 or /repo-name/verify/BD-AP-2026-12345)
+    const verifyMatch = path.match(/\/verify\/([^/]+)/i);
     if (verifyMatch && verifyMatch[1]) {
       matchId = decodeURIComponent(verifyMatch[1].trim());
     }

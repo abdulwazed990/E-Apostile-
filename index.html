@@ -1,6 +1,20 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      (function() {
+        var baseHref = '/';
+        if (window.location.hostname.endsWith('.github.io')) {
+          var pathSegments = window.location.pathname.split('/');
+          if (pathSegments.length > 1 && pathSegments[1]) {
+            baseHref = '/' + pathSegments[1] + '/';
+          }
+        }
+        var baseTag = document.createElement('base');
+        baseTag.href = baseHref;
+        document.head.appendChild(baseTag);
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="HgO-QuwfGsgIRbAYv3QSzIJNGc2mE8MGf18Klp6nwD0" />

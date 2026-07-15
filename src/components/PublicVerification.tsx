@@ -94,7 +94,15 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
       }
       return domain;
     }
-    return window.location.origin;
+    // Handle GitHub Pages subpath inclusion
+    let base = window.location.origin;
+    if (window.location.hostname.endsWith('.github.io')) {
+      const pathSegments = window.location.pathname.split('/');
+      if (pathSegments.length > 1 && pathSegments[1]) {
+        base += '/' + pathSegments[1];
+      }
+    }
+    return base;
   };
 
   const getHostnameOnly = (urlStr: string): string => {
