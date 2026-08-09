@@ -22,15 +22,35 @@ export default function AdminLogin({ onLoginSuccess, onCancel }: AdminLoginProps
     setLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+    const maxRetries = 3;
+    let lastError: any = null;
+    let response: Response | null = null;
 
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+        });
+        break;
+      } catch (err) {
+        lastError = err;
+        if (attempt < maxRetries - 1) {
+          await new Promise((res) => setTimeout(res, 800));
+        }
+      }
+    }
+
+    if (!response) {
+      setError('Unable to connect to the server. Please check your internet connection and try again.');
+      setLoading(false);
+      return;
+    }
+
+    try {
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -39,7 +59,7 @@ export default function AdminLogin({ onLoginSuccess, onCancel }: AdminLoginProps
         setError(data.message || 'Invalid administrator credentials. Please try again.');
       }
     } catch (err) {
-      setError('Connection failure. Please verify the server is running on port 3000.');
+      setError('Unable to process server response. Please try again.');
     } finally {
       setLoading(false);
     }
