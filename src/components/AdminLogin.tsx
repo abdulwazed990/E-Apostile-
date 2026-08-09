@@ -88,7 +88,7 @@ export default function AdminLogin({ onLoginSuccess, onCancel }: AdminLoginProps
                 <input
                   type="text"
                   required
-                  placeholder="admin"
+                  placeholder="Enter username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 focus:border-[#006a4e] focus:ring-2 focus:ring-[#006a4e]/20 outline-none transition-all duration-150"

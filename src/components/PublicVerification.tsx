@@ -8,6 +8,7 @@ import { Search, ShieldAlert, BadgeCheck, FileDown, Image, Sparkles, RefreshCw, 
 import { Certificate } from '../types';
 import { FALLBACK_CERTIFICATES } from '../fallbackData';
 import { renderCertificateToCanvas, downloadCanvasAsPdf, downloadCanvasAsJpg } from '../utils/certificateRenderer';
+import ApostilleMainBoard from './ApostilleMainBoard';
 
 interface PublicVerificationProps {
   initialId?: string;
@@ -167,15 +168,24 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
 
   return (
     <div className={`mx-auto bg-white min-h-screen animate-fade-in font-sans selection:bg-[#006a4e] selection:text-white pb-14 text-slate-800 pt-0 ${searched && certificate ? 'max-w-3xl' : 'max-w-xl'}`}>
-           {/* Mobile-Converted Large Left-Aligned Logo with perfect masking/cropping to remove top/bottom white margins */}
-      <div className="w-full bg-white border-b border-gray-100 h-[120px] sm:h-[150px] overflow-hidden flex items-center justify-start select-none px-0 pt-0">
-        <div className="relative w-[340px] sm:w-[425px] h-[250px] sm:h-[310px] -mt-[10px] sm:-mt-[15px] ml-[-5px] sm:ml-[-8px]">
+           {/* Clean Left-Aligned Header Logo with Modest Padding */}
+      <div className="w-full bg-white border-b border-gray-100 py-3.5 sm:py-4 px-4 sm:px-6 flex items-center justify-start select-none">
+        <div className="flex items-center gap-3 select-none">
           <img 
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWdacpfhGqope2aL72T9lkMz1LH4Mb6WDJUSN30VQy2jnxKHZ_AurUpVJv&s=10"
+            src="https://upload.wikimedia.org/wikipedia/commons/8/84/Government_Seal_of_Bangladesh.svg"
             alt="myGov Apostille Logo"
-            className="w-full h-full object-contain select-none block"
+            className="h-12 sm:h-16 w-auto flex-shrink-0 object-contain select-none block drop-shadow-sm"
             referrerPolicy="no-referrer"
           />
+          <div className="flex flex-col justify-center leading-tight">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight font-sans">
+              <span className="text-[#d81921]">my</span>
+              <span className="text-[#006a4e]">Gov</span>
+            </span>
+            <span className="text-[12px] sm:text-[14px] font-bold text-slate-800 tracking-tight whitespace-nowrap">
+              এক ঠিকানায় সরকারি সেবা
+            </span>
+          </div>
         </div>
       </div>
 
@@ -247,211 +257,12 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
               
               {/* A4 Apostille Main Board Preview (Always visible at the top as requested) */}
               <div className="space-y-3">
-                <p className="text-[10px] text-gray-400 font-bold text-center animate-pulse flex items-center justify-center gap-1.5 sm:hidden">
-                  ⟷ ডানে-বামে স্ক্রোল করুন (Scroll left/right to view full format)
-                </p>
                 
-                {/* Physical Document sheet Mock Container */}
-                <div id="full-stamp-page-view" className="bg-[#f0f2f5] p-1.5 sm:p-6 rounded-2xl border border-gray-200/60 shadow-inner flex justify-start sm:justify-center w-full max-w-full overflow-x-auto">
-                  
-                  {/* Real physical document certificate card */}
-                  <div className="min-w-[580px] sm:min-w-0 w-full max-w-[620px] bg-white border-2 sm:border-[5px] border-[#006a4e] p-0.5 sm:p-1 shadow-xl relative overflow-hidden flex-shrink-0 mx-auto">
-                
-                {/* Decorative internal golden border */}
-                <div className="border border-[#e2ba43] px-2.5 py-4 pb-3 sm:px-6 sm:py-8 bg-[#fffdfa] relative flex flex-col justify-between min-h-[580px] sm:min-h-[750px]">
-                  
-                  {/* Seamless Watermark Pattern */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-[0.035] pointer-events-none select-none z-0">
-                    <img 
-                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoO5Xk7jKpjqR_aQIlfTrPrSndqDAe7oqq9vQX4Q2SrQ&s=10"
-                      alt="Watermark BG"
-                      className="w-[75%] h-auto object-contain"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-
-                    {/* Header Zone */}
-                    <div className="text-center relative z-10">
-                      {/* Circular Government Crest */}
-                      <div className="flex justify-center mb-1.5 sm:mb-2">
-                        <img 
-                          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWdacpfhGqope2aL72T9lkMz1LH4Mb6WDJUSN30VQy2jnxKHZ_AurUpVJv&s=10" 
-                          alt="Government of Bangladesh Crest" 
-                          className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                      <h4 className="text-[10px] sm:text-[12px] font-black tracking-wider text-[#006a4e] leading-snug sm:leading-none uppercase px-1">
-                        GOVERNMENT OF THE PEOPLE&apos;S REPUBLIC OF BANGLADESH
-                      </h4>
-                      <h5 className="text-[9px] sm:text-[11px] font-bold text-gray-750 mt-0.5 sm:mt-1 uppercase">
-                        Ministry of Foreign Affairs, Dhaka
-                      </h5>
-                      <p className="text-[8px] sm:text-[10px] text-gray-400 font-bold leading-normal mt-0.5">
-                        পররাষ্ট্র মন্ত্রণালয়, ঢাকা, বাংলাদেশ
-                      </p>
-
-                      <div className="w-1/3 sm:w-1/2 h-[1px] bg-amber-500/30 mx-auto my-2.5 sm:my-3"></div>
-                      
-                      <h1 className="text-lg sm:text-2xl font-black tracking-widest text-[#0f2c59] border-b-2 border-[#e2ba43] inline-block pb-0.5">
-                        APOSTILLE
-                      </h1>
-                      <p className="text-[8px] sm:text-[9.5px] font-bold text-gray-400 italic leading-snug mt-0.5 sm:mt-1">
-                        (Convention de La Haye du 5 october 1961)
-                      </p>
-                    </div>
-
-                    {/* Form Metadata Fields 1-10 (Exactly styled like legal sheet) */}
-                    <div className="mt-4 sm:mt-6 text-[10px] sm:text-[11.5px] text-gray-855 space-y-2 sm:space-y-3 relative z-10 font-kalpurush">
-                      
-                      <div className="flex flex-row items-center justify-between sm:justify-start">
-                        <span className="w-28 sm:w-44 font-bold text-gray-500 flex-shrink-0 text-[10px] sm:text-xs">1. Country (দেশ):</span>
-                        <span className="font-kalpurush font-black text-[#006a4e] uppercase text-[11px] sm:text-[12.5px] tracking-wider font-extrabold">BANGLADESH</span>
-                      </div>
-
-                      <div className="py-1 border-y border-amber-500/10 italic text-[9px] sm:text-[10px] font-bold text-amber-850 bg-amber-50/20 px-2 rounded leading-none">
-                        This public document / এই অফিসিয়াল বা পাবলিক ডকুমেন্টটি-
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:gap-1">
-                        <div className="flex flex-row items-center w-full sm:w-44 flex-shrink-0">
-                          <span className="font-bold text-gray-500 text-[10px] sm:text-xs">2. Has been signed by:</span>
-                        </div>
-                        <span className="font-kalpurush font-black text-gray-950 text-[11.5px] sm:text-[13px] sm:pl-0 mt-0.5 sm:mt-0 font-extrabold">{certificate.officerName || 'CONTROLLER OF THE EXAMINATION'}</span>
-                      </div>
-                      <div className="flex items-center pl-0 sm:pl-[180px] text-[8.5px] text-gray-400 -mt-1 font-bold">
-                        <span>(স্বাক্ষরকারী ব্যক্তির নাম)</span>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:gap-1">
-                        <div className="flex flex-row items-center w-full sm:w-44 flex-shrink-0">
-                          <span className="font-bold text-gray-500 text-[10px] sm:text-xs">3. Acting in the capacity of:</span>
-                        </div>
-                        <span className="font-kalpurush font-black text-gray-900 text-[11px] sm:text-[12.5px] mt-0.5 sm:mt-0 font-extrabold">{certificate.officerDesignation || 'Controller of the examination'}</span>
-                      </div>
-                      <div className="flex items-center pl-0 sm:pl-[180px] text-[8.5px] text-gray-400 -mt-1 font-bold">
-                        <span>(কর্মকর্তার পদবি)</span>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:gap-1">
-                        <div className="flex flex-row items-center w-full sm:w-44 flex-shrink-0">
-                          <span className="font-bold text-gray-500 text-[10px] sm:text-xs">4. Bears the seal/stamp of:</span>
-                        </div>
-                        <span className="font-kalpurush font-black text-gray-900 text-[11px] sm:text-[12.5px] mt-0.5 sm:mt-0 font-extrabold">
-                          {certificate.boardName || 'Higher & Secondary Education Board'}
-                        </span>
-                      </div>
-                      <div className="flex items-center pl-0 sm:pl-[180px] text-[8.5px] text-gray-400 -mt-1 font-bold">
-                        <span>(কার সীলমোহর বহন করে)</span>
-                      </div>
-
-                      <div className="py-1 border-y border-amber-500/10 italic text-[9px] sm:text-[10px] font-bold text-amber-850 bg-amber-50/20 px-2 rounded leading-none font-bold">
-                        Certified / এতদ্বারা সত্যায়ন করা হলো-
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-gray-500 text-[10px] sm:text-xs">5. At (স্থান):</span>
-                          <span className="font-kalpurush font-black text-gray-955 text-[11px] sm:text-[12.5px] uppercase font-extrabold">DHAKA</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 justify-end sm:justify-start">
-                          <span className="font-bold text-gray-550 text-[10px] sm:text-xs">6. Date (তারিখ):</span>
-                          <span className="font-kalpurush font-black text-gray-900 text-[11px] sm:text-[12.5px] font-mono font-extrabold">{certificate.issueDate}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:gap-1">
-                        <div className="flex flex-row items-center w-full sm:w-44 flex-shrink-0">
-                          <span className="font-bold text-gray-500 text-[10px] sm:text-xs">7. By (কর্তৃপক্ষ):</span>
-                        </div>
-                        <span className="font-kalpurush font-black text-[#0f2c59] text-[11px] sm:text-[12.5px] mt-0.5 sm:mt-0 uppercase font-extrabold">
-                          MD. RASHID ABID, Assistant Secretary, Ministry of Foreign Affairs
-                        </span>
-                      </div>
-
-                      <div className="flex flex-row items-center justify-between sm:justify-start">
-                        <span className="w-28 sm:w-44 font-bold text-gray-500 flex-shrink-0 text-[10px] sm:text-xs">8. No (আইডি নম্বর):</span>
-                        <span className="font-kalpurush font-black text-[#006a4e] text-[12px] sm:text-[14px] font-mono tracking-wide font-extrabold">{certificate.id}</span>
-                      </div>
-
-                    </div>
-
-                     {/* Round Seal & Signature side-by-side box */}
-                     <div className="grid grid-cols-2 gap-2 sm:gap-4 border border-amber-500/20 bg-amber-50/15 p-2 sm:p-3 rounded-xl mt-4 sm:mt-6 relative z-10 animate-fade-in font-kalpurush">
-                       
-                       {/* Left: Ministry Seal Stamp */}
-                       <div className="flex flex-col items-center justify-between text-center border-r border-amber-500/10 pr-1.5 sm:pr-2">
-                         {certificate.sealImageUrl && !certificate.sealImageUrl.includes('svg') && !certificate.sealImageUrl.includes('q=tbn:ANd9GcRWdacpfhGqope2aL72T9lkMz1LH4Mb6WDJUSN30VQy2jnxKHZ_AurUpVJv') ? (
-                           <div className="w-14 h-14 sm:w-20 sm:h-20 my-1 sm:my-2 flex items-center justify-center">
-                             <img 
-                               src={certificate.sealImageUrl} 
-                               alt="Official MoFA Seal" 
-                               className="w-full h-full object-contain filter drop-shadow-sm opacity-95"
-                               referrerPolicy="no-referrer"
-                             />
-                           </div>
-                         ) : (
-                           <div className="w-14 h-14 sm:w-20 sm:h-20 my-1 sm:my-2 bg-transparent flex items-center justify-center">
-                             {/* Left blank empty as requested */}
-                           </div>
-                         )}
-
-                         <span className="text-[7.5px] sm:text-[9px] font-black text-gray-400 uppercase tracking-wider">
-                           9. Seal / Stamp (সীলমোহর)
-                         </span>
-                         
-                         <span className="text-[7.5px] sm:text-[8px] text-gray-450 italic leading-none block font-kalpurush font-bold">Ministry of Foreign Affairs, Dhaka</span>
-                       </div>
- 
-                       {/* Right: Signature stamp */}
-                       <div className="flex flex-col items-center justify-between text-center pl-1.5 sm:pl-2">
-                         {certificate.signatureImageUrl && !certificate.signatureImageUrl.includes('svg') && !certificate.signatureImageUrl.includes('default') && certificate.signatureImageUrl.length >= 50 ? (
-                           <div className="w-18 h-8 sm:w-24 sm:h-12 my-1 sm:my-2 flex items-center justify-center">
-                             <img 
-                               src={certificate.signatureImageUrl} 
-                               alt="Officer Signature" 
-                               className="w-full h-full object-contain filter opacity-95"
-                               referrerPolicy="no-referrer"
-                             />
-                           </div>
-                         ) : (
-                           <div className="w-18 h-8 sm:w-24 sm:h-12 my-1 sm:my-2 bg-transparent flex items-center justify-center">
-                             {/* Left blank empty as requested */}
-                           </div>
-                         )}
-
-                         <span className="text-[7.5px] sm:text-[9px] font-black text-gray-400 uppercase tracking-wider">
-                           10. Signature (স্বাক্ষর)
-                         </span>
- 
-                         <div className="leading-tight font-kalpurush">
-                           <span className="text-[8.5px] sm:text-[10px] font-kalpurush font-black text-gray-900 uppercase block leading-none font-extrabold">{certificate.officerName}</span>
-                           <span className="text-[7px] sm:text-[8px] font-kalpurush font-bold text-gray-500 leading-tight block mt-0.5 font-extrabold">{certificate.officerDesignation}</span>
-                         </div>
-                       </div>
- 
-                     </div>
-
-                    {/* Bottom scanning footnote */}
-                    <div className="border-t border-gray-200 pt-3 sm:pt-4 mt-4 sm:mt-6 flex flex-row items-center justify-between gap-3 relative z-10 text-[8px] sm:text-[9.5px]">
-                      <div className="text-gray-400 leading-relaxed text-left max-w-[70%] sm:max-w-sm">
-                        <p className="font-bold text-[#006a4e] text-[8.5px] sm:text-[10px]">Verification Directory Web Portal</p>
-                        <p className="mt-0.5 leading-tight">To verify online, scan next-door QR or visit <strong className="text-gray-650 font-semibold select-all">https://{getHostnameOnly(getBaseVerificationUrl())}</strong> with unique ID.</p>
-                      </div>
-
-                      {/* Dynamic Verification Server Generated QR */}
-                      <div className="w-14 h-14 sm:w-18 sm:h-18 bg-white border border-gray-200 p-0.5 sm:p-1 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-                        <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`${getBaseVerificationUrl()}/verify/${certificate.id}`)}`}
-                          alt="Verification QR code"
-                          className="w-full h-full object-contain"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
+                <ApostilleMainBoard 
+                  certificate={certificate} 
+                  baseDomain={getBaseVerificationUrl()} 
+                  readOnly={true} 
+                />
 
                 {/* Single bottom download button as requested by user */}
                 <div className="no-print pt-6 pb-2 text-center max-w-sm mx-auto">
@@ -466,7 +277,6 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
                 </div>
 
               </div>
-            </div>
 
               {/* SYSTEM PERSISTED ENCLOSURE DOCUMENTS (ke ke sottyaito korse) LAYOUT */}
               {certificate.attachedCertificates && certificate.attachedCertificates.length > 0 && (
@@ -528,34 +338,34 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
                                 {certItem.attestations.map((attAction) => (
                                   <div 
                                     key={attAction.id} 
-                                    className="w-full max-w-md flex flex-col items-center text-center p-4 bg-purple-50/15 border border-purple-500/10 rounded-2xl relative select-none shadow-sm"
+                                    className="w-full max-w-md flex flex-col items-center text-center p-4 bg-gray-50 border border-gray-200 rounded-2xl relative select-none shadow-sm"
                                   >
-                                    {/* Cursive style Purple/Blue ink state */}
-                                    <div className="font-cursive font-bold italic text-purple-800 text-[18px] tracking-wide border-b border-dashed border-purple-300 pb-1 uppercase w-full">
+                                    {/* Continuous handwritten / cursive attestation headline */}
+                                    <div className="font-['Dancing_Script',cursive] text-2xl text-[#006a4e] border-b border-dashed border-gray-300/80 pb-1 w-full normal-case tracking-wide font-bold leading-tight text-center">
                                       &quot;{attAction.type || 'Verified and found correct'}&quot;
                                     </div>
 
-                                    {/* Simulated ink signature photo in center */}
+                                    {/* Signature photo in center with transparent mix-blend */}
                                     {attAction.signatureImageUrl ? (
-                                      <div className="h-12 my-2.5 flex items-center justify-center max-w-[150px] drop-shadow-sm">
+                                      <div className="h-12 my-2.5 flex items-center justify-center max-w-[150px]">
                                         <img 
                                           src={attAction.signatureImageUrl} 
                                           alt="Attestation Ink Signature" 
-                                          className="h-full object-contain filter hue-rotate-15 saturate-200"
+                                          className="h-full object-contain filter mix-blend-multiply"
                                           referrerPolicy="no-referrer"
                                         />
                                       </div>
                                     ) : (
-                                      <div className="h-8 my-2 flex items-center justify-center opacity-30 italic text-[9px] text-gray-400">
+                                      <div className="h-8 my-2 flex items-center justify-center opacity-40 italic text-[10px] text-gray-500">
                                         (Digitally Signed)
                                       </div>
                                     )}
 
-                                    {/* Officer Parameters */}
-                                    <div className="space-y-0.5 leading-tight">
-                                      <p className="text-[10.5px] font-black text-gray-900 uppercase tracking-tight">{attAction.officerName}</p>
-                                      <p className="text-[9.5px] font-bold text-gray-500 leading-tight px-2 max-w-xs">{attAction.officerDesignation}</p>
-                                      <p className="text-[8.5px] font-semibold text-purple-600 font-mono tracking-wider mt-1.5 bg-purple-100/50 px-2.5 py-0.5 rounded-full inline-block">
+                                    {/* Officer Parameters in seal ink color */}
+                                    <div className="space-y-0.5 leading-tight text-center">
+                                      <p className="text-[12px] font-black uppercase tracking-tight text-[#006a4e]">{attAction.officerName}</p>
+                                      <p className="text-[10.5px] font-bold leading-tight px-2 max-w-xs text-[#006a4e]/90">{attAction.officerDesignation}</p>
+                                      <p className="text-[10px] font-medium text-[#006a4e] font-mono tracking-wider mt-1.5">
                                         Date: {attAction.date}
                                       </p>
                                     </div>

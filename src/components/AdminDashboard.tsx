@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Certificate, AttachedCertificate, AttestationItem } from '../types';
 import { renderCertificateToCanvas, downloadCanvasAsPdf, downloadCanvasAsJpg } from '../utils/certificateRenderer';
+import ApostilleMainBoard from './ApostilleMainBoard';
 
 interface AdminDashboardProps {
   token: string;
@@ -644,6 +645,17 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
               রেকর্ড তালিকায় ফিরে যান (View All Records List)
             </button>
           </div>
+
+          <div className="mt-8 border-t border-emerald-100 pt-6 text-left">
+            <h4 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3 text-center">
+              A4 APOSTILLE MAIN BOARD DOCUMENT PREVIEW
+            </h4>
+            <ApostilleMainBoard 
+              certificate={generatedProfile} 
+              baseDomain={getBaseVerificationUrl()} 
+              readOnly={true} 
+            />
+          </div>
         </div>
       )}
 
@@ -899,7 +911,19 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 mb-1">স্বাক্ষরকারী কর্মকর্তার নাম (Officer Name) *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Md. Nazrul Islam"
+                        value={certForm.officerName || ''}
+                        onChange={(e) => setCertForm(prev => ({ ...prev, officerName: e.target.value }))}
+                        className="w-full px-3 py-2 text-xs border border-gray-200 bg-white rounded-xl outline-none focus:border-[#006a4e] font-bold"
+                      />
+                    </div>
+
                     <div>
                       <label className="block text-[10px] font-bold text-gray-500 mb-1">কর্মকর্তার পদবী (Official capacity) *</label>
                       <input
@@ -1199,21 +1223,49 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
           </form>
 
           {/* REAL TIME PREVIEW PANEL */}
-          <div className="lg:col-span-5 flex flex-col items-center bg-gray-50 p-4 border border-gray-200 rounded-2xl shadow-inner relative sticky top-6">
-            <span className="absolute top-4 left-4 bg-gray-900 border border-emerald-500 text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded shadow z-10">
+          <div className="lg:col-span-5 flex flex-col items-center bg-gray-50 p-2 sm:p-4 border border-gray-200 rounded-2xl shadow-inner relative sticky top-6">
+            <span className="absolute top-4 left-4 bg-gray-900 border border-emerald-500 text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded shadow z-20">
               A4 Apostille Main Board Preview
             </span>
 
             {previewLoading && (
-              <div className="absolute inset-0 bg-white/85 flex flex-col items-center justify-center z-20 rounded-2xl">
+              <div className="absolute inset-0 bg-white/85 flex flex-col items-center justify-center z-30 rounded-2xl">
                 <RefreshCw className="w-8 h-8 text-[#006a4e] animate-spin mb-1" />
                 <span className="text-[10px] text-gray-500 font-bold">ড্রাফট লাইভ রেন্ডার হচ্ছে...</span>
               </div>
             )}
 
+            <div className="w-full pt-8">
+              <ApostilleMainBoard 
+                certificate={{
+                  id: certForm.id || 'PREVIEW-TEMP',
+                  applicantName: (certForm.applicantName || 'FULL NAME OF APPLICANT').toUpperCase(),
+                  fatherName: (certForm.fatherName || 'FATHER NAME').toUpperCase(),
+                  motherName: (certForm.motherName || 'MOTHER NAME').toUpperCase(),
+                  dob: certForm.dob || '2000-01-01',
+                  certificateType: certForm.certificateType || 'Educational Certificate',
+                  examinationName: certForm.examinationName || undefined,
+                  rollNumber: certForm.rollNumber || undefined,
+                  registrationNumber: certForm.registrationNumber || undefined,
+                  certificateNumber: certForm.certificateNumber || 'CERT-NO-XXXXXX',
+                  boardName: certForm.boardName || undefined,
+                  country: certForm.country || 'Target Country',
+                  issueDate: certForm.issueDate || new Date().toISOString().split('T')[0],
+                  officerName: certForm.officerName || 'Md. Nazrul Islam',
+                  officerDesignation: certForm.officerDesignation || 'Assistant Secretary',
+                  signatureImageUrl: certForm.signatureImageUrl || settings.globalSignatureUrl,
+                  sealImageUrl: certForm.sealImageUrl || settings.globalSealUrl,
+                  createdDate: new Date().toISOString(),
+                  status: 'VERIFIED'
+                }} 
+                baseDomain={getBaseVerificationUrl()} 
+                readOnly={true} 
+              />
+            </div>
+
             <canvas
               ref={previewCanvasRef}
-              className="w-full h-auto bg-white border border-gray-300 rounded shadow-lg max-w-[420px]"
+              className="hidden"
             />
 
             <div className="mt-3 text-[10px] font-bold text-gray-400 text-center uppercase tracking-wide">
@@ -1255,7 +1307,7 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
                 </p>
               </div>
 
-              {/* Logo / Seal / Signature Template URL Inputs */}
+              {/* Logo / Seal / Signature Template Upload Inputs */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-xs font-black text-gray-500 uppercase tracking-wider">
@@ -1265,32 +1317,92 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
                     type="text"
                     value={settings.defaultLogoUrl}
                     onChange={(e) => setSettings({ ...settings, defaultLogoUrl: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none text-xs focus:border-[#006a4e] transition-all"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none text-xs focus:border-[#006a4e] transition-all bg-gray-50/50"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label className="block text-xs font-black text-gray-500 uppercase tracking-wider">
-                    গ্লোবাল সিল টেমপ্লেট (Global Seal Image / Base64)
+                    অফিসিয়াল অ্যাপোস্টিল সীল/স্ট্যাম্প ফাইল আপলোড (Official Apostille Seal - PNG/JPG/WEBP)
                   </label>
-                  <textarea
-                    rows={2}
-                    value={settings.globalSealUrl}
-                    onChange={(e) => setSettings({ ...settings, globalSealUrl: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none text-xs font-mono focus:border-[#006a4e] transition-all"
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const r = new FileReader();
+                      r.onload = (ev) => {
+                        if (ev.target?.result) {
+                          setSettings(prev => ({ ...prev, globalSealUrl: String(ev.target?.result) }));
+                        }
+                      };
+                      r.readAsDataURL(file);
+                    }}
+                    className="w-full text-xs text-gray-500 bg-white border border-gray-200 rounded-xl p-1.5 focus:border-[#006a4e]"
                   />
+                  {settings.globalSealUrl ? (
+                    <div className="flex items-center gap-3 p-2 bg-emerald-50 border border-emerald-200 rounded-xl mt-2">
+                      <div className="w-14 h-14 bg-white border rounded-lg p-1 flex items-center justify-center">
+                        <img src={settings.globalSealUrl} alt="Seal Preview" className="max-h-full max-w-full object-contain" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[11px] font-bold text-emerald-900">অফিসিয়াল সীল আপলোড করা আছে</p>
+                        <p className="text-[9.5px] text-emerald-700">Official seal active</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSettings(prev => ({ ...prev, globalSealUrl: '' }))}
+                        className="text-xs font-extrabold text-red-600 hover:text-red-800 bg-white px-2.5 py-1 rounded-lg border border-red-200"
+                      >
+                        রিমুভ করুন
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-gray-400 italic">কোনো সীল সেট করা নেই। (No seal assigned)</p>
+                  )}
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                   <label className="block text-xs font-black text-gray-500 uppercase tracking-wider">
-                    গ্লোবাল অফিসার স্বাক্ষর (Global Officer Signature SVG / Base64)
+                    গ্লোবাল কর্মকর্তার স্বাক্ষর ফাইল আপলোড (Global Officer Signature Image - PNG/JPG/WEBP)
                   </label>
-                  <textarea
-                    rows={2}
-                    value={settings.globalSignatureUrl}
-                    onChange={(e) => setSettings({ ...settings, globalSignatureUrl: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none text-xs font-mono focus:border-[#006a4e] transition-all"
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const r = new FileReader();
+                      r.onload = (ev) => {
+                        if (ev.target?.result) {
+                          setSettings(prev => ({ ...prev, globalSignatureUrl: String(ev.target?.result) }));
+                        }
+                      };
+                      r.readAsDataURL(file);
+                    }}
+                    className="w-full text-xs text-gray-500 bg-white border border-gray-200 rounded-xl p-1.5 focus:border-[#006a4e]"
                   />
+                  {settings.globalSignatureUrl ? (
+                    <div className="flex items-center gap-3 p-2 bg-emerald-50 border border-emerald-200 rounded-xl mt-2">
+                      <div className="h-10 w-28 bg-white border rounded-lg p-1 flex items-center justify-center">
+                        <img src={settings.globalSignatureUrl} alt="Signature Preview" className="max-h-full max-w-full object-contain" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[11px] font-bold text-emerald-900">স্বাক্ষর আপলোড করা আছে</p>
+                        <p className="text-[9.5px] text-emerald-700">Signature image active</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSettings(prev => ({ ...prev, globalSignatureUrl: '' }))}
+                        className="text-xs font-extrabold text-red-600 hover:text-red-800 bg-white px-2.5 py-1 rounded-lg border border-red-200"
+                      >
+                        রিমুভ করুন
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-gray-400 italic">কোনো স্বাক্ষর ফাইল আপলোড করা নেই।</p>
+                  )}
                 </div>
               </div>
 

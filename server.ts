@@ -61,7 +61,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
   const normalizedUsername = String(username).trim();
   const normalizedPassword = String(password);
 
-  if (normalizedUsername !== 'admin') {
+  if (normalizedUsername !== 'Sa7@kL3!') {
     res.status(401).json({ success: false, message: 'Invalid admin credentials' });
     return;
   }
@@ -73,11 +73,11 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
   }
 
   // Sign token valid for 24 hours
-  const token = jwt.sign({ username: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
+  const token = jwt.sign({ username: 'Sa7@kL3!' }, JWT_SECRET, { expiresIn: '24h' });
   res.json({
     success: true,
     token,
-    username: 'admin',
+    username: 'Sa7@kL3!',
     message: 'Login successful'
   });
 });
@@ -92,7 +92,7 @@ app.get('/api/auth/verify-token', (req: Request, res: Response) => {
   const token = authHeader.split(' ')[1];
   try {
     jwt.verify(token, JWT_SECRET);
-    res.json({ valid: true, username: 'admin' });
+    res.json({ valid: true, username: 'Sa7@kL3!' });
   } catch (err) {
     res.json({ valid: false });
   }

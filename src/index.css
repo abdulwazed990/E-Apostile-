@@ -27,6 +27,11 @@
 }
 
 /* Custom printing styles to guarantee seamless clean layouts */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
 @media print {
   header, footer, button, .no-print {
     display: none !important;

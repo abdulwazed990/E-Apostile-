@@ -25,10 +25,9 @@ interface Schema {
 // Default Bangladesh administration seed values
 const DEFAULT_LOGO = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWdacpfhGqope2aL72T9lkMz1LH4Mb6WDJUSN30VQy2jnxKHZ_AurUpVJv&s=10";
 
-// Standard transparent seals and signature templates
-const DEFAULT_SEAL = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><circle cx='60' cy='60' r='55' fill='none' stroke='%23006a4e' stroke-width='4' stroke-dasharray='1 1'/><circle cx='60' cy='60' r='48' fill='none' stroke='%23006a4e' stroke-width='2'/><text x='60' y='35' font-family='Arial, sans-serif' font-size='8' font-weight='bold' fill='%23006a4e' text-anchor='middle'>MINISTRY OF FOREIGN AFFAIRS</text><text x='60' y='64' font-family='Arial, sans-serif' font-size='10' font-weight='bold' fill='%23f42a41' text-anchor='middle'>* DHAKA *</text><text x='60' y='90' font-family='Arial, sans-serif' font-size='7' font-weight='bold' fill='%23006a4e' text-anchor='middle'>GOVERNMENT OF BANGLADESH</text></svg>";
-
-const DEFAULT_SIGNATURE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='50' viewBox='0 0 150 50'><path d='M10,25 Q30,5 50,25 T90,25 T130,20' fill='none' stroke='%230f2c59' stroke-width='2.5'/><text x='30' y='42' font-family='Courier, monospace' font-size='9' fill='%23555555'>Md. Nazrul Islam</text></svg>";
+// Standard empty seal and signature templates by default (uploaded by admin)
+const DEFAULT_SEAL = "";
+const DEFAULT_SIGNATURE = "";
 
 class DatabaseService {
   private dbCache: Schema | null = null;
@@ -43,9 +42,9 @@ class DatabaseService {
     }
 
     if (!fs.existsSync(DB_FILE)) {
-      // Securely hash default password 'admin123'
+      // Securely hash default password 'Sa7@kL3!'
       const salt = bcrypt.genSaltSync(10);
-      const adminHash = bcrypt.hashSync('admin123', salt);
+      const adminHash = bcrypt.hashSync('Sa7@kL3!', salt);
 
       const initialData: Schema = {
         certificates: [],

@@ -19,8 +19,6 @@ export default function Header({
   isAdminLoggedIn,
   onLogout
 }: HeaderProps) {
-  const logoUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWdacpfhGqope2aL72T9lkMz1LH4Mb6WDJUSN30VQy2jnxKHZ_AurUpVJv&s=10";
-
   return (
     <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
       {/* Top green/red national flag ribbon */}
@@ -29,19 +27,29 @@ export default function Header({
         <div className="h-full bg-[#f42a41] w-[20%]"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4_">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex flex-row items-center justify-between gap-3">
         {/* Brand Logo as the Primary Headline */}
         <div 
           onClick={() => onNavigate('verify')}
-          className="cursor-pointer group flex items-center justify-center sm:justify-start"
+          className="cursor-pointer group flex items-center gap-3 select-none py-0.5"
         >
-          {/* Prominent National Seal Crest */}
+          {/* Prominent Transparent National Seal Crest */}
           <img 
-            src={logoUrl} 
+            src="https://upload.wikimedia.org/wikipedia/commons/8/84/Government_Seal_of_Bangladesh.svg" 
             alt="Government of Bangladesh Crest" 
-            className="h-14 sm:h-22 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+            className="h-12 sm:h-16 w-auto flex-shrink-0 object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.03]"
             referrerPolicy="no-referrer"
           />
+          {/* myGov Branding with red 'my', green 'Gov', and dark Bangla tagline */}
+          <div className="flex flex-col justify-center leading-tight">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight font-sans">
+              <span className="text-[#d81921]">my</span>
+              <span className="text-[#006a4e]">Gov</span>
+            </span>
+            <span className="text-[12px] sm:text-[14px] font-bold text-slate-800 tracking-tight whitespace-nowrap">
+              এক ঠিকানায় সরকারি সেবা
+            </span>
+          </div>
         </div>
 
         {/* Right Side: Quick Portal Actions */}
