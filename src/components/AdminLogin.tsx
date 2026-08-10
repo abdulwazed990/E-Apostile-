@@ -51,15 +51,21 @@ export default function AdminLogin({ onLoginSuccess, onCancel }: AdminLoginProps
     }
 
     try {
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        data = { message: responseText || 'Received an invalid response from the server.' };
+      }
 
       if (response.ok && data.success) {
-        onLoginSuccess(data.token, data.username);
+        onLoginSuccess(data.token, data.username || username);
       } else {
         setError(data.message || 'Invalid administrator credentials. Please try again.');
       }
     } catch (err) {
-      setError('Unable to process server response. Please try again.');
+      setError('An error occurred while logging in. Please try again.');
     } finally {
       setLoading(false);
     }

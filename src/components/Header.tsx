@@ -40,14 +40,14 @@ export default function Header({
             className="h-12 sm:h-16 w-auto flex-shrink-0 object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.03]"
             referrerPolicy="no-referrer"
           />
-          {/* myGov Branding with red 'my', green 'Gov', and dark Bangla tagline */}
+          {/* myGov Branding */}
           <div className="flex flex-col justify-center leading-tight">
             <span className="text-2xl sm:text-3xl font-black tracking-tight font-sans">
-              <span className="text-[#d81921]">my</span>
-              <span className="text-[#006a4e]">Gov</span>
+              <span className="text-[#eb1c24]">my</span>
+              <span className="text-[#008751]">Gov</span>
             </span>
-            <span className="text-[12px] sm:text-[14px] font-bold text-slate-800 tracking-tight whitespace-nowrap">
-              এক ঠিকানায় সরকারি সেবা
+            <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight whitespace-nowrap">
+              এক ঠিকানায় সরকারি সেবা
             </span>
           </div>
         </div>

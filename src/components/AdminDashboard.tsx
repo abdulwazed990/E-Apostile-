@@ -218,15 +218,13 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
   };
 
   const downloadCertificateImmediate = async (cert: Certificate) => {
-    const tempCanvas = document.createElement('canvas');
     const baseDomain = getBaseVerificationUrl();
-    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=185x185&data=${encodeURIComponent(
+    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
       `${baseDomain}/verify/${cert.id}`
     )}`;
     try {
       const hostOnly = getHostnameOnly(baseDomain);
-      await renderCertificateToCanvas(tempCanvas, cert, qrDataUrl, hostOnly);
-      downloadCanvasAsPdf(tempCanvas, `MoFA_e-Apostille_${cert.id}.pdf`);
+      await downloadCanvasAsPdf(cert, qrDataUrl, hostOnly, `MoFA_e-Apostille_${cert.id}.pdf`);
     } catch (err) {
       console.error("Direct download failed", err);
     }

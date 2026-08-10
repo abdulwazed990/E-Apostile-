@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, ShieldAlert, BadgeCheck, FileDown, Image, Sparkles, RefreshCw, AlertTriangle, ArrowRight, CheckCircle2, ChevronRight, ZoomIn, FileText, CheckCircle, MapPin, Calendar, Award, ArrowDownCircle, Download } from 'lucide-react';
+import { Search, BadgeCheck, FileDown, Image, Sparkles, RefreshCw, AlertTriangle, ArrowRight, CheckCircle2, ChevronRight, ZoomIn, FileText, CheckCircle, MapPin, Calendar, Award, ArrowDownCircle, Download } from 'lucide-react';
 import { Certificate } from '../types';
 import { FALLBACK_CERTIFICATES } from '../fallbackData';
 import { renderCertificateToCanvas, downloadCanvasAsPdf, downloadCanvasAsJpg } from '../utils/certificateRenderer';
@@ -156,9 +156,14 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
     }
   }, [certificate, customDomain]);
 
-  const handleDownloadPdf = () => {
-    if (!canvasRef.current || !certificate) return;
-    downloadCanvasAsPdf(canvasRef.current, `MoFA_e-Apostille_${certificate.id}.pdf`);
+  const handleDownloadPdf = async () => {
+    if (!certificate) return;
+    const baseDomain = getBaseVerificationUrl();
+    const hostOnly = getHostnameOnly(baseDomain);
+    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
+      `${baseDomain}/verify/${certificate.id}`
+    )}`;
+    await downloadCanvasAsPdf(certificate, qrDataUrl, hostOnly, `MoFA_e-Apostille_${certificate.id}.pdf`);
   };
 
   const handleDownloadJpg = () => {
@@ -169,21 +174,21 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
   return (
     <div className={`mx-auto bg-white min-h-screen animate-fade-in font-sans selection:bg-[#006a4e] selection:text-white pb-14 text-slate-800 pt-0 ${searched && certificate ? 'max-w-3xl' : 'max-w-xl'}`}>
            {/* Clean Left-Aligned Header Logo with Modest Padding */}
-      <div className="w-full bg-white border-b border-gray-100 py-3.5 sm:py-4 px-4 sm:px-6 flex items-center justify-start select-none">
+      <div className="w-full bg-white border-b border-gray-100 py-3.5 sm:py-4 px-4 sm:px-6 flex items-center justify-between select-none">
         <div className="flex items-center gap-3 select-none">
           <img 
             src="https://upload.wikimedia.org/wikipedia/commons/8/84/Government_Seal_of_Bangladesh.svg"
-            alt="myGov Apostille Logo"
+            alt="myGov Logo"
             className="h-12 sm:h-16 w-auto flex-shrink-0 object-contain select-none block drop-shadow-sm"
             referrerPolicy="no-referrer"
           />
           <div className="flex flex-col justify-center leading-tight">
             <span className="text-2xl sm:text-3xl font-black tracking-tight font-sans">
-              <span className="text-[#d81921]">my</span>
-              <span className="text-[#006a4e]">Gov</span>
+              <span className="text-[#eb1c24]">my</span>
+              <span className="text-[#008751]">Gov</span>
             </span>
-            <span className="text-[12px] sm:text-[14px] font-bold text-slate-800 tracking-tight whitespace-nowrap">
-              এক ঠিকানায় সরকারি সেবা
+            <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight whitespace-nowrap">
+              এক ঠিকানায় সরকারি সেবা
             </span>
           </div>
         </div>

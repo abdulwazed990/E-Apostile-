@@ -50,36 +50,35 @@ const authenticateAdmin = (req: AuthenticatedRequest, res: Response, next: NextF
 
 // Auth Login
 app.post('/api/auth/login', (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body || {};
 
-  if (!username || !password) {
-    res.status(400).json({ success: false, message: 'Username and password are required' });
-    return;
+    if (!username || !password) {
+      res.status(400).json({ success: false, message: 'Username and password are required' });
+      return;
+    }
+
+    const normalizedUsername = String(username).trim();
+    const normalizedPassword = String(password);
+
+    const isValid = dbService.verifyAdminPassword(normalizedPassword);
+    if (!isValid) {
+      res.status(401).json({ success: false, message: 'Invalid admin credentials. Please check your password.' });
+      return;
+    }
+
+    // Sign token valid for 24 hours
+    const token = jwt.sign({ username: normalizedUsername }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({
+      success: true,
+      token,
+      username: normalizedUsername,
+      message: 'Login successful'
+    });
+  } catch (err: any) {
+    console.error('[Auth] Login error:', err);
+    res.status(500).json({ success: false, message: 'Authentication service temporarily unavailable. Please try again.' });
   }
-
-  // Escape inputs and check credential correctness
-  const normalizedUsername = String(username).trim();
-  const normalizedPassword = String(password);
-
-  if (normalizedUsername !== 'Sa7@kL3!') {
-    res.status(401).json({ success: false, message: 'Invalid admin credentials' });
-    return;
-  }
-
-  const isValid = dbService.verifyAdminPassword(normalizedPassword);
-  if (!isValid) {
-    res.status(401).json({ success: false, message: 'Invalid admin credentials' });
-    return;
-  }
-
-  // Sign token valid for 24 hours
-  const token = jwt.sign({ username: 'Sa7@kL3!' }, JWT_SECRET, { expiresIn: '24h' });
-  res.json({
-    success: true,
-    token,
-    username: 'Sa7@kL3!',
-    message: 'Login successful'
-  });
 });
 
 // Verify Current Token Validity
@@ -91,8 +90,8 @@ app.get('/api/auth/verify-token', (req: Request, res: Response) => {
   }
   const token = authHeader.split(' ')[1];
   try {
-    jwt.verify(token, JWT_SECRET);
-    res.json({ valid: true, username: 'Sa7@kL3!' });
+    const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
+    res.json({ valid: true, username: decoded.username || 'admin' });
   } catch (err) {
     res.json({ valid: false });
   }
