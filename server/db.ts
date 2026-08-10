@@ -141,9 +141,11 @@ class DatabaseService {
 
   public getCertificateById(id: string): Certificate | undefined {
     const certs = this.getCertificates();
-    // Neutralizing case matching and trimming to prevent input syntax injection issues
     const normalizedId = id.trim().toUpperCase();
-    return certs.find(c => c.id.toUpperCase() === normalizedId);
+    return certs.find(c => 
+      c.id.trim().toUpperCase() === normalizedId || 
+      (c.certificateNumber && c.certificateNumber.trim().toUpperCase() === normalizedId)
+    );
   }
 
   public addCertificate(cert: Certificate) {

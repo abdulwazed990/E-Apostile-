@@ -30,7 +30,19 @@ export default function ApostilleMainBoard({ certificate, baseDomain }: Apostill
     }
   };
 
-  const currentBase = baseDomain || (typeof window !== 'undefined' ? window.location.origin : '');
+  const getEnvBase = () => {
+    const metaEnv = (import.meta as any).env;
+    const envBase = (metaEnv?.VITE_PUBLIC_BASE_URL || (typeof process !== 'undefined' && process.env?.PUBLIC_BASE_URL)) as string | undefined;
+    if (envBase && envBase.trim() !== '') {
+      let b = envBase.trim();
+      if (!b.startsWith('http://') && !b.startsWith('https://')) b = 'https://' + b;
+      if (b.endsWith('/')) b = b.slice(0, -1);
+      return b;
+    }
+    return '';
+  };
+
+  const currentBase = getEnvBase() || baseDomain || (typeof window !== 'undefined' ? window.location.origin : '');
   const hostOnly = getHostnameOnly(currentBase);
   const verifyUrl = `${currentBase}/verify/${certificate.id}`;
   const qrCodeDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(verifyUrl)}`;

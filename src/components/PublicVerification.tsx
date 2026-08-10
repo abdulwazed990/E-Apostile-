@@ -30,20 +30,43 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Helper to load local storage certificates
+  const getLocalCertificates = (): Certificate[] => {
+    try {
+      const stored = localStorage.getItem('MoFA_Certificates');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  };
+
   // Fetch registered certificate database profiles for quick simulation select
   useEffect(() => {
     fetch('/api/public/certificates')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.certificates) {
-          setPublicCerts(data.certificates);
-        } else {
-          setPublicCerts(FALLBACK_CERTIFICATES.map(c => ({ id: c.id, applicantName: c.applicantName })));
+      .then(res => res.text())
+      .then(text => {
+        if (text && text.trim().startsWith('{')) {
+          const data = JSON.parse(text);
+          if (data.success && Array.isArray(data.certificates)) {
+            setPublicCerts(data.certificates);
+            return;
+          }
         }
+        // Combined local + fallback list
+        const localList = getLocalCertificates();
+        const combined = [...localList, ...FALLBACK_CERTIFICATES];
+        const uniqueMap = new Map();
+        combined.forEach(c => uniqueMap.set(c.id.toUpperCase(), { id: c.id, applicantName: c.applicantName }));
+        setPublicCerts(Array.from(uniqueMap.values()));
       })
       .catch((e) => {
-        console.log('Public fetch failed, using fallback', e);
-        setPublicCerts(FALLBACK_CERTIFICATES.map(c => ({ id: c.id, applicantName: c.applicantName })));
+        const localList = getLocalCertificates();
+        const combined = [...localList, ...FALLBACK_CERTIFICATES];
+        const uniqueMap = new Map();
+        combined.forEach(c => uniqueMap.set(c.id.toUpperCase(), { id: c.id, applicantName: c.applicantName }));
+        setPublicCerts(Array.from(uniqueMap.values()));
       });
   }, [certificate]);
 
@@ -60,9 +83,11 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
 
     try {
       const response = await fetch(`/api/certificates/verify/${encodeURIComponent(trimmedId)}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
+      const responseText = await response.text();
+      
+      if (responseText && responseText.trim().startsWith('{')) {
+        const data = JSON.parse(responseText);
+        if (response.ok && data.success && data.certificate) {
           setCertificate(data.certificate);
           setCustomDomain(data.customDomain || '');
           setLoading(false);
@@ -70,21 +95,36 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
         }
       }
     } catch (err) {
-      console.log('API fetch failed, falling back to static database lookup');
+      console.log('API fetch failed, checking browser storage');
     }
 
-    // Static fallback lookup for static hosts (GitHub Pages / Vercel)
-    const staticCert = FALLBACK_CERTIFICATES.find(c => c.id.toUpperCase() === trimmedId);
-    if (staticCert) {
-      setCertificate(staticCert);
+    // Secondary local store search (MoFA_Certificates + FALLBACK_CERTIFICATES)
+    const localCerts = getLocalCertificates();
+    const allKnown = [...localCerts, ...FALLBACK_CERTIFICATES];
+    const match = allKnown.find(c => 
+      c.id.trim().toUpperCase() === trimmedId || 
+      (c.certificateNumber && c.certificateNumber.trim().toUpperCase() === trimmedId)
+    );
+
+    if (match) {
+      setCertificate(match);
       setCustomDomain('');
     } else {
-      setErrorMsg('✗ Invalid Certificate: No matching record found in the federal database.');
+      setErrorMsg(`No matching verification record was found for Token / ID "${trimmedId}".`);
     }
     setLoading(false);
   };
 
   const getBaseVerificationUrl = () => {
+    const metaEnv = (import.meta as any).env;
+    const envBase = (metaEnv?.VITE_PUBLIC_BASE_URL || (typeof process !== 'undefined' && process.env?.PUBLIC_BASE_URL)) as string | undefined;
+    if (envBase && envBase.trim() !== '') {
+      let b = envBase.trim();
+      if (!b.startsWith('http://') && !b.startsWith('https://')) b = 'https://' + b;
+      if (b.endsWith('/')) b = b.slice(0, -1);
+      return b;
+    }
+
     if (customDomain && customDomain.trim() !== '') {
       let domain = customDomain.trim();
       if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
@@ -249,7 +289,7 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
                 <AlertTriangle className="w-8 h-8" />
               </div>
               <div className="text-center sm:text-left">
-                <h3 className="text-lg font-black text-red-800 uppercase tracking-tight">✗ Invalid ID Provided</h3>
+                <h3 className="text-lg font-black text-red-800 uppercase tracking-tight">✗ Verification Record Not Found</h3>
                 <p className="text-xs text-red-600 font-bold mt-1 leading-normal">{errorMsg}</p>
                 <p className="text-[11px] text-gray-400 mt-2">If this is an official file, please contact the Consular Section of MoFA, Dhaka.</p>
               </div>
