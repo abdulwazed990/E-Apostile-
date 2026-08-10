@@ -65,7 +65,7 @@ const optionalAdminAuth = (req: AuthenticatedRequest, res: Response, next: NextF
 // ==========================================
 
 // Auth Login
-app.post('/api/auth/login', (req: Request, res: Response) => {
+app.post(['/api/auth/login', '/auth/login'], (req: Request, res: Response) => {
   try {
     const { username, password } = req.body || {};
 
@@ -98,7 +98,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
 });
 
 // Verify Current Token Validity
-app.get('/api/auth/verify-token', (req: Request, res: Response) => {
+app.get(['/api/auth/verify-token', '/auth/verify-token'], (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.json({ valid: false });
@@ -114,7 +114,12 @@ app.get('/api/auth/verify-token', (req: Request, res: Response) => {
 });
 
 // PUBLIC: Verify Certificate by Unique ID
-app.get('/api/certificates/verify/:id', (req: Request, res: Response) => {
+app.get([
+  '/api/certificates/verify/:id',
+  '/certificates/verify/:id',
+  '/api/verify/:id',
+  '/verify/:id'
+], (req: Request, res: Response) => {
   const id = req.params.id;
   const certificate = dbService.getCertificateById(id);
 
@@ -132,7 +137,7 @@ app.get('/api/certificates/verify/:id', (req: Request, res: Response) => {
 });
 
 // PUBLIC: Get list of active certificate IDs for navigation/testing purposes
-app.get('/api/public/certificates', (req: Request, res: Response) => {
+app.get(['/api/public/certificates', '/public/certificates'], (req: Request, res: Response) => {
   const certificates = dbService.getCertificates();
   res.json({
     success: true,
@@ -141,7 +146,7 @@ app.get('/api/public/certificates', (req: Request, res: Response) => {
 });
 
 // ADMIN: Get all certificates (with optional search query)
-app.get('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
+app.get(['/api/certificates', '/certificates'], authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
   const searchQuery = req.query.search ? String(req.query.search).trim().toLowerCase() : '';
   const certificates = dbService.getCertificates();
 
@@ -243,16 +248,23 @@ const handleRegistration = (req: AuthenticatedRequest, res: Response) => {
 
 app.post([
   '/api/certificates',
+  '/certificates',
   '/api/register',
+  '/register',
   '/api/certificates/register',
+  '/certificates/register',
   '/api/auth/register',
+  '/auth/register',
   '/api/auth/signup',
+  '/auth/signup',
   '/api/users/register',
-  '/api/signup'
+  '/users/register',
+  '/api/signup',
+  '/signup'
 ], optionalAdminAuth, handleRegistration);
 
 // ADMIN: Update Certificate
-app.put('/api/certificates/:id', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
+app.put(['/api/certificates/:id', '/certificates/:id'], authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
   try {
     const id = req.params.id;
     const updatedData = req.body;
@@ -275,7 +287,7 @@ app.put('/api/certificates/:id', authenticateAdmin, (req: AuthenticatedRequest, 
 });
 
 // ADMIN: Delete Certificate
-app.delete('/api/certificates/:id', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
+app.delete(['/api/certificates/:id', '/certificates/:id'], authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
   const id = req.params.id;
   const success = dbService.deleteCertificate(id);
 
@@ -291,12 +303,12 @@ app.delete('/api/certificates/:id', authenticateAdmin, (req: AuthenticatedReques
 });
 
 // ADMIN: Get Settings
-app.get('/api/settings', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
+app.get(['/api/settings', '/settings'], authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
   res.json({ success: true, settings: dbService.getSettings() });
 });
 
 // ADMIN: Update Settings
-app.post('/api/settings', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
+app.post(['/api/settings', '/settings'], authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
   const { defaultLogoUrl, globalSealUrl, globalSignatureUrl, customDomain } = req.body;
   
   dbService.updateSettings({
@@ -314,7 +326,7 @@ app.post('/api/settings', authenticateAdmin, (req: AuthenticatedRequest, res: Re
 });
 
 // ADMIN: Change Password
-app.post('/api/settings/change-password', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
+app.post(['/api/settings/change-password', '/settings/change-password'], authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
   const { oldPassword, newPassword } = req.body;
 
   if (!oldPassword || !newPassword) {

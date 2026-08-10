@@ -29,17 +29,23 @@ export default function App() {
     
     let matchId = '';
     
-    // Mode A: Clean URL path (e.g., /verify/BD-AP-2026-12345 or /repo-name/verify/BD-AP-2026-12345)
-    const verifyMatch = path.match(/\/verify\/([^/]+)/i);
+    // Mode A: Clean URL path (e.g., /verify/BD-AP-2026-12345, /BD-AP-2026-95851, or /repo-name/verify/BD-AP-2026-12345)
+    const verifyMatch = path.match(/\/(?:verify\/)?([A-Za-z0-9\-_]+)/i);
     if (verifyMatch && verifyMatch[1]) {
-      matchId = decodeURIComponent(verifyMatch[1].trim());
+      const candidate = decodeURIComponent(verifyMatch[1].trim());
+      if (candidate && !['api', 'assets', 'index.html', 'favicon.ico', 'admin', 'login', 'dashboard'].includes(candidate.toLowerCase())) {
+        matchId = candidate;
+      }
     }
     
-    // Mode B: Hash routing fallback (e.g., #/verify/BD-AP-2026-12345 or #verify/BD-AP-2026-12345)
+    // Mode B: Hash routing fallback (e.g., #/verify/BD-AP-2026-12345, #BD-AP-2026-95851, or #verify/BD-AP-2026-12345)
     if (!matchId && hash) {
-      const hashMatch = hash.match(/^(?:#\/verify\/|#verify\/)([^/]+)/i);
+      const hashMatch = hash.match(/^(?:#\/verify\/|#verify\/|#\/|#)([A-Za-z0-9\-_]+)/i);
       if (hashMatch && hashMatch[1]) {
-        matchId = decodeURIComponent(hashMatch[1].trim());
+        const candidate = decodeURIComponent(hashMatch[1].trim());
+        if (candidate && !['verify', 'admin', 'login', 'dashboard'].includes(candidate.toLowerCase())) {
+          matchId = candidate;
+        }
       }
     }
     
