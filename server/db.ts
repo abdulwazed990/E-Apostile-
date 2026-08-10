@@ -237,9 +237,7 @@ class DatabaseService {
              (cToken && cToken === normalizedId) ||
              (cleanId.length > 3 && cCleanId === cleanId) ||
              (cCertNum && cCertNum === normalizedId) ||
-             (cleanId.length > 3 && cCleanCertNum === cleanId) ||
-             cId.endsWith(normalizedId) ||
-             normalizedId.endsWith(cId);
+             (cleanId.length > 3 && cCleanCertNum === cleanId);
     });
   }
 

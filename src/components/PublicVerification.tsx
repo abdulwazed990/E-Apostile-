@@ -98,7 +98,7 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
       console.log('API fetch failed, checking browser storage');
     }
 
-    // Secondary local store search (MoFA_Certificates + FALLBACK_CERTIFICATES)
+    // Secondary local store search (MoFA_Certificates)
     const localCerts = getLocalCertificates();
     const allKnown = [...localCerts, ...FALLBACK_CERTIFICATES];
     const cleanSearch = trimmedId.replace(/[^A-Z0-9]/g, '');
@@ -108,13 +108,13 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
       const cCleanId = cId.replace(/[^A-Z0-9]/g, '');
       const cCertNum = c.certificateNumber ? c.certificateNumber.trim().toUpperCase() : '';
       const cCleanCertNum = cCertNum.replace(/[^A-Z0-9]/g, '');
+      const cToken = (c as any).verificationToken ? (c as any).verificationToken.trim().toUpperCase() : '';
 
       return cId === trimmedId ||
+             (cToken && cToken === trimmedId) ||
              (cleanSearch.length > 3 && cCleanId === cleanSearch) ||
              (cCertNum && cCertNum === trimmedId) ||
-             (cleanSearch.length > 3 && cCleanCertNum === cleanSearch) ||
-             cId.endsWith(trimmedId) ||
-             trimmedId.endsWith(cId);
+             (cleanSearch.length > 3 && cCleanCertNum === cleanSearch);
     });
 
     if (match) {
