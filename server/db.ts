@@ -165,8 +165,15 @@ class DatabaseService {
       if (fs.existsSync(fileToRead)) {
         const content = fs.readFileSync(fileToRead, 'utf-8');
         const parsed = JSON.parse(content) as Schema;
-        if (!parsed.certificates || parsed.certificates.length === 0) {
+        if (!parsed.certificates || !Array.isArray(parsed.certificates) || parsed.certificates.length === 0) {
           parsed.certificates = DEFAULT_CERTIFICATES;
+        } else {
+          // Merge any default seed certificates if missing
+          for (const defCert of DEFAULT_CERTIFICATES) {
+            if (!parsed.certificates.some(c => c.id.toUpperCase() === defCert.id.toUpperCase())) {
+              parsed.certificates.push(defCert);
+            }
+          }
         }
         this.dbCache = parsed;
         return this.dbCache;
@@ -219,64 +226,21 @@ class DatabaseService {
     const normalizedId = raw.toUpperCase();
     const cleanId = normalizedId.replace(/[^A-Z0-9]/g, '');
 
-    const found = certs.find(c => {
-      const cId = c.id.trim().toUpperCase();
+    return certs.find(c => {
+      const cId = c.id ? c.id.trim().toUpperCase() : '';
       const cCleanId = cId.replace(/[^A-Z0-9]/g, '');
       const cCertNum = c.certificateNumber ? c.certificateNumber.trim().toUpperCase() : '';
       const cCleanCertNum = cCertNum.replace(/[^A-Z0-9]/g, '');
+      const cToken = (c as any).verificationToken ? (c as any).verificationToken.trim().toUpperCase() : '';
 
       return cId === normalizedId ||
+             (cToken && cToken === normalizedId) ||
              (cleanId.length > 3 && cCleanId === cleanId) ||
              (cCertNum && cCertNum === normalizedId) ||
              (cleanId.length > 3 && cCleanCertNum === cleanId) ||
              cId.endsWith(normalizedId) ||
              normalizedId.endsWith(cId);
     });
-
-    if (found) return found;
-
-    // Dynamic auto-verification for official scanned tokens or generated IDs
-    if (normalizedId.length >= 4) {
-      const isOfficialPattern = normalizedId.startsWith('APO') || normalizedId.startsWith('BD') || normalizedId.startsWith('AP') || cleanId.length >= 5;
-      if (isOfficialPattern) {
-        const dynamicCert: Certificate = {
-          id: raw.toUpperCase(),
-          applicantName: "ABDUL WAZED",
-          fatherName: "ABDUL KARIM",
-          motherName: "ROKEYA BEGOM",
-          dob: "1995-05-15",
-          certificateType: "Educational Certificate",
-          examinationName: "HSC Examination",
-          rollNumber: "123456",
-          registrationNumber: "9876543210",
-          certificateNumber: `AP-${Date.now()}`,
-          boardName: "Board of Intermediate and Secondary Education, Dhaka",
-          country: "United Kingdom",
-          issueDate: new Date().toISOString().split('T')[0],
-          qrCodeDataUrl: "",
-          officerName: "Md. Nazrul Islam",
-          officerDesignation: "Assistant Secretary (Consular)",
-          signatureImageUrl: "",
-          sealImageUrl: "",
-          createdDate: new Date().toISOString(),
-          status: "VERIFIED",
-          attachedCertificates: []
-        };
-
-        try {
-          const db = this.readDb();
-          db.certificates.unshift(dynamicCert);
-          this.writeDb(db);
-        } catch (e) {
-          if (this.dbCache) {
-            this.dbCache.certificates.unshift(dynamicCert);
-          }
-        }
-        return dynamicCert;
-      }
-    }
-
-    return undefined;
   }
 
   public addCertificate(cert: Certificate) {

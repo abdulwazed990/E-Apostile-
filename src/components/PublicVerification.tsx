@@ -120,35 +120,9 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
     if (match) {
       setCertificate(match);
       setCustomDomain('');
-    } else if (trimmedId.length >= 4) {
-      // Dynamic auto-fallback for scanned e-Apostille tokens (e.g., APO-2026-0810-76402)
-      const dynamicMatch: Certificate = {
-        id: trimmedId,
-        applicantName: "ABDUL WAZED",
-        fatherName: "ABDUL KARIM",
-        motherName: "ROKEYA BEGOM",
-        dob: "1995-05-15",
-        certificateType: "Educational Certificate",
-        examinationName: "HSC Examination",
-        rollNumber: "123456",
-        registrationNumber: "9876543210",
-        certificateNumber: `AP-${Date.now()}`,
-        boardName: "Board of Intermediate and Secondary Education, Dhaka",
-        country: "United Kingdom",
-        issueDate: new Date().toISOString().split('T')[0],
-        qrCodeDataUrl: "",
-        officerName: "Md. Nazrul Islam",
-        officerDesignation: "Assistant Secretary (Consular)",
-        signatureImageUrl: "",
-        sealImageUrl: "",
-        createdDate: new Date().toISOString(),
-        status: "VERIFIED",
-        attachedCertificates: []
-      };
-      setCertificate(dynamicMatch);
-      setCustomDomain('');
     } else {
       setErrorMsg(`No matching verification record was found for Token / ID "${trimmedId}".`);
+      setCertificate(null);
     }
     setLoading(false);
   };
@@ -329,7 +303,6 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
               <div className="text-center sm:text-left">
                 <h3 className="text-lg font-black text-red-800 uppercase tracking-tight">✗ Verification Record Not Found</h3>
                 <p className="text-xs text-red-600 font-bold mt-1 leading-normal">{errorMsg}</p>
-                <p className="text-[11px] text-gray-400 mt-2">If this is an official file, please contact the Consular Section of MoFA, Dhaka.</p>
               </div>
             </div>
           )}
