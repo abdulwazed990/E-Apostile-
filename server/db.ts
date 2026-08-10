@@ -63,75 +63,101 @@ class DatabaseService {
   }
 
   private ensureInitialized() {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
 
-    if (!fs.existsSync(DB_FILE)) {
-      // Securely hash default password 'Sa7@kL3!'
-      const salt = bcrypt.genSaltSync(10);
-      const adminHash = bcrypt.hashSync('Sa7@kL3!', salt);
+      if (!fs.existsSync(DB_FILE)) {
+        const salt = bcrypt.genSaltSync(10);
+        const adminHash = bcrypt.hashSync('Sa7@kL3!', salt);
 
-      const initialData: Schema = {
-        certificates: DEFAULT_CERTIFICATES,
-        adminHash,
-        settings: {
-          defaultLogoUrl: DEFAULT_LOGO,
-          globalSealUrl: DEFAULT_SEAL,
-          globalSignatureUrl: DEFAULT_SIGNATURE,
-          customDomain: ''
+        const initialData: Schema = {
+          certificates: DEFAULT_CERTIFICATES,
+          adminHash,
+          settings: {
+            defaultLogoUrl: DEFAULT_LOGO,
+            globalSealUrl: DEFAULT_SEAL,
+            globalSignatureUrl: DEFAULT_SIGNATURE,
+            customDomain: ''
+          }
+        };
+
+        try {
+          fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
+        } catch (e) {
+          const tmpFile = path.join('/tmp', 'db.json');
+          fs.writeFileSync(tmpFile, JSON.stringify(initialData, null, 2), 'utf-8');
         }
-      };
-
-      fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
-      this.dbCache = initialData;
+        this.dbCache = initialData;
+      }
+    } catch (err) {
+      console.warn('[DB] Warning initializing storage path:', err);
+      if (!this.dbCache) {
+        const salt = bcrypt.genSaltSync(10);
+        const adminHash = bcrypt.hashSync('Sa7@kL3!', salt);
+        this.dbCache = {
+          certificates: DEFAULT_CERTIFICATES,
+          adminHash,
+          settings: {
+            defaultLogoUrl: DEFAULT_LOGO,
+            globalSealUrl: DEFAULT_SEAL,
+            globalSignatureUrl: DEFAULT_SIGNATURE,
+            customDomain: ''
+          }
+        };
+      }
     }
   }
 
   private readDb(): Schema {
     this.ensureInitialized();
-    try {
-      const content = fs.readFileSync(DB_FILE, 'utf-8');
-      const parsed = JSON.parse(content) as Schema;
-      if (!parsed.certificates || parsed.certificates.length === 0) {
-        parsed.certificates = DEFAULT_CERTIFICATES;
-        this.writeDb(parsed);
-      }
-      this.dbCache = parsed;
-      return this.dbCache;
-    } catch (e) {
-      console.error('[DB] Error parsing db.json, recovering:', e);
-      if (this.dbCache) return this.dbCache;
+    if (this.dbCache) return this.dbCache;
 
-      // Reset to default valid state
-      const salt = bcrypt.genSaltSync(10);
-      const adminHash = bcrypt.hashSync('Sa7@kL3!', salt);
-      const fallback: Schema = {
-        certificates: DEFAULT_CERTIFICATES,
-        adminHash,
-        settings: {
-          defaultLogoUrl: DEFAULT_LOGO,
-          globalSealUrl: DEFAULT_SEAL,
-          globalSignatureUrl: DEFAULT_SIGNATURE,
-          customDomain: ''
+    try {
+      const fileToRead = fs.existsSync(DB_FILE) ? DB_FILE : path.join('/tmp', 'db.json');
+      if (fs.existsSync(fileToRead)) {
+        const content = fs.readFileSync(fileToRead, 'utf-8');
+        const parsed = JSON.parse(content) as Schema;
+        if (!parsed.certificates || parsed.certificates.length === 0) {
+          parsed.certificates = DEFAULT_CERTIFICATES;
         }
-      };
-      this.writeDb(fallback);
-      return fallback;
+        this.dbCache = parsed;
+        return this.dbCache;
+      }
+    } catch (e) {
+      console.warn('[DB] Error reading db file, falling back to cache:', e);
     }
+
+    const salt = bcrypt.genSaltSync(10);
+    const adminHash = bcrypt.hashSync('Sa7@kL3!', salt);
+    const fallback: Schema = {
+      certificates: DEFAULT_CERTIFICATES,
+      adminHash,
+      settings: {
+        defaultLogoUrl: DEFAULT_LOGO,
+        globalSealUrl: DEFAULT_SEAL,
+        globalSignatureUrl: DEFAULT_SIGNATURE,
+        customDomain: ''
+      }
+    };
+    this.dbCache = fallback;
+    return fallback;
   }
 
   private writeDb(data: Schema) {
+    this.dbCache = data;
     try {
       const tempPath = `${DB_FILE}.tmp.${Date.now()}`;
       fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf-8');
       fs.renameSync(tempPath, DB_FILE);
-      this.dbCache = data;
     } catch (err) {
-      console.error('[DB] Write error:', err);
-      // Fallback direct write
-      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-      this.dbCache = data;
+      try {
+        const tmpFile = path.join('/tmp', 'db.json');
+        fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
+      } catch (e) {
+        console.warn('[DB] In-memory update active (read-only environment)');
+      }
     }
   }
 

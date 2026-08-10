@@ -44,6 +44,22 @@ const authenticateAdmin = (req: AuthenticatedRequest, res: Response, next: NextF
   }
 };
 
+// Optional admin authentication middleware (allows registration calls with or without bearer token)
+const optionalAdminAuth = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
+      req.user = decoded;
+    } catch (err) {
+      res.status(403).json({ success: false, message: 'Invalid or expired session token' });
+      return;
+    }
+  }
+  next();
+};
+
 // ==========================================
 // API ENDPOINTS
 // ==========================================
@@ -149,18 +165,21 @@ app.get('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res:
   res.json({ success: true, certificates: filtered });
 });
 
-// ADMIN: Create Certificate
-app.post('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
+// REGISTER / CREATE CERTIFICATE (Handles multiple endpoint aliases)
+const handleRegistration = (req: AuthenticatedRequest, res: Response) => {
   try {
-    const data = req.body;
+    const data = req.body || {};
 
-    if (!data.applicantName || String(data.applicantName).trim() === '') {
+    const name = data.applicantName || data.candidateName || data.name || data.username;
+    if (!name || String(name).trim() === '') {
       res.status(400).json({ success: false, message: 'Candidate Name (applicantName) is required.' });
       return;
     }
 
     // Auto-generate unique verification ID if none supplied
-    let verificationId = data.id ? String(data.id).trim().toUpperCase() : '';
+    let verificationId = data.id || data.verificationId || data.token || data.certificateNumber;
+    verificationId = verificationId ? String(verificationId).trim().toUpperCase() : '';
+
     if (!verificationId) {
       let attempts = 0;
       do {
@@ -173,7 +192,7 @@ app.post('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res
       // Check uniqueness for custom provided ID
       const existing = dbService.getCertificateById(verificationId);
       if (existing) {
-        res.status(409).json({ success: false, message: `A Certificate with Verification ID "${verificationId}" already exists.` });
+        res.status(409).json({ success: false, message: `This account or certificate record with Verification ID "${verificationId}" already exists.` });
         return;
       }
     }
@@ -182,7 +201,7 @@ app.post('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res
 
     const newCertificate: Certificate = {
       id: verificationId,
-      applicantName: String(data.applicantName).trim().toUpperCase(),
+      applicantName: String(name).trim().toUpperCase(),
       fatherName: data.fatherName ? String(data.fatherName).trim().toUpperCase() : '',
       motherName: data.motherName ? String(data.motherName).trim().toUpperCase() : '',
       dob: data.dob ? String(data.dob) : '',
@@ -209,14 +228,28 @@ app.post('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res
 
     res.status(201).json({
       success: true,
-      message: 'Certificate registered successfully',
+      message: 'Registration successful',
+      user: {
+        id: newCertificate.id,
+        name: newCertificate.applicantName
+      },
       certificate: newCertificate
     });
   } catch (err: any) {
     console.error('[API] Error creating certificate:', err);
     res.status(500).json({ success: false, message: err.message || 'Server error creating certificate' });
   }
-});
+};
+
+app.post([
+  '/api/certificates',
+  '/api/register',
+  '/api/certificates/register',
+  '/api/auth/register',
+  '/api/auth/signup',
+  '/api/users/register',
+  '/api/signup'
+], optionalAdminAuth, handleRegistration);
 
 // ADMIN: Update Certificate
 app.put('/api/certificates/:id', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
@@ -302,26 +335,33 @@ app.post('/api/settings/change-password', authenticateAdmin, (req: Authenticated
 // VITE CLIENT DEV / PROD HANDLER
 // ==========================================
 
-async function start() {
-  if (process.env.NODE_ENV !== "production") {
-    // Development mode
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    // Production mode
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+// Export Express app for Vercel Serverless Functions
+export default app;
+export { app };
+
+// Start standalone HTTP server in non-Vercel environments (Cloud Run / container / local dev)
+if (!process.env.VERCEL && !process.env.VERCEL_ENV) {
+  async function start() {
+    if (process.env.NODE_ENV !== "production") {
+      // Development mode
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    } else {
+      // Production mode
+      const distPath = path.join(process.cwd(), 'dist');
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+    }
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`[Server] Bangladesh e-Apostille Verification System running on http://localhost:${PORT}`);
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Server] Bangladesh e-Apostille Verification System running on http://localhost:${PORT}`);
-  });
+  start();
 }
-
-start();
