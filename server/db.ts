@@ -216,7 +216,7 @@ class DatabaseService {
 
   public changeAdminPassword(oldPass: string, newPass: string): boolean {
     const db = this.readDb();
-    if (!bcrypt.compareSync(oldPass, db.adminHash)) {
+    if (!this.verifyAdminPassword(oldPass)) {
       return false;
     }
     const salt = bcrypt.genSaltSync(10);

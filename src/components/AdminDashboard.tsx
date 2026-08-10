@@ -381,6 +381,33 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
   // Form Submit Handler
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Required Field Validation
+    if (!certForm.applicantName || !certForm.applicantName.trim()) {
+      showStatus('error', 'Required field missing: Candidate Name (applicantName)');
+      return;
+    }
+    if (!certForm.fatherName || !certForm.fatherName.trim()) {
+      showStatus('error', "Required field missing: Father's Name");
+      return;
+    }
+    if (!certForm.motherName || !certForm.motherName.trim()) {
+      showStatus('error', "Required field missing: Mother's Name");
+      return;
+    }
+    if (!certForm.issueDate || !certForm.issueDate.trim()) {
+      showStatus('error', 'Required field missing: Sign Date');
+      return;
+    }
+    if (!certForm.officerName || !certForm.officerName.trim()) {
+      showStatus('error', 'Required field missing: Officer Name');
+      return;
+    }
+    if (!certForm.officerDesignation || !certForm.officerDesignation.trim()) {
+      showStatus('error', 'Required field missing: Officer Designation');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -395,29 +422,30 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
         },
         body: JSON.stringify(certForm)
       });
+
       const responseText = await res.text();
       let data: any = null;
       if (responseText && responseText.trim().startsWith('{')) {
         try { data = JSON.parse(responseText); } catch (e) { data = null; }
       }
 
-      const savedCert = (data && data.certificate) ? data.certificate : certForm;
+      if (res.ok && data && data.success) {
+        const savedCert = data.certificate || certForm;
 
-      // Local storage sync helper
-      try {
-        const stored = localStorage.getItem('MoFA_Certificates');
-        let currentList: any[] = stored ? JSON.parse(stored) : [];
-        if (!Array.isArray(currentList)) currentList = [];
-        const existingIdx = currentList.findIndex((c: any) => c.id.toUpperCase() === savedCert.id.toUpperCase());
-        if (existingIdx >= 0) {
-          currentList[existingIdx] = savedCert;
-        } else {
-          currentList.unshift(savedCert);
-        }
-        localStorage.setItem('MoFA_Certificates', JSON.stringify(currentList));
-      } catch (e) {}
+        // Sync to local cache
+        try {
+          const stored = localStorage.getItem('MoFA_Certificates');
+          let currentList: any[] = stored ? JSON.parse(stored) : [];
+          if (!Array.isArray(currentList)) currentList = [];
+          const existingIdx = currentList.findIndex((c: any) => c.id.toUpperCase() === savedCert.id.toUpperCase());
+          if (existingIdx >= 0) {
+            currentList[existingIdx] = savedCert;
+          } else {
+            currentList.unshift(savedCert);
+          }
+          localStorage.setItem('MoFA_Certificates', JSON.stringify(currentList));
+        } catch (e) {}
 
-      if (res.ok) {
         showStatus('success', editingId ? '✓ Revised and saved certificate parameters successfully!' : '✓ Registered e-Apostille successfully!');
         
         // Open the Dedicated QR Code Delivery screen
@@ -448,29 +476,12 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
         });
         fetchRecords();
       } else {
-        // Fallback save locally if backend is unavailable
-        showStatus('success', '✓ Certificate saved locally in browser storage!');
-        setGeneratedProfile(savedCert);
-        setEditingId(null);
-        fetchRecords();
+        // Backend returned an error response (400, 409, 401, 500)
+        const errorMessage = (data && data.message) ? data.message : `Registration Failed (HTTP ${res.status})`;
+        showStatus('error', errorMessage);
       }
-    } catch (err) {
-      // Offline / client fallback
-      const savedCert = certForm;
-      try {
-        const stored = localStorage.getItem('MoFA_Certificates');
-        let currentList: any[] = stored ? JSON.parse(stored) : [];
-        if (!Array.isArray(currentList)) currentList = [];
-        const existingIdx = currentList.findIndex((c: any) => c.id.toUpperCase() === savedCert.id.toUpperCase());
-        if (existingIdx >= 0) { currentList[existingIdx] = savedCert; }
-        else { currentList.unshift(savedCert); }
-        localStorage.setItem('MoFA_Certificates', JSON.stringify(currentList));
-      } catch (e) {}
-
-      showStatus('success', '✓ Registered e-Apostille locally in browser storage!');
-      setGeneratedProfile(savedCert);
-      setEditingId(null);
-      fetchRecords();
+    } catch (err: any) {
+      showStatus('error', `Connection error: Unable to reach database server. (${err.message || 'Network Failure'})`);
     } finally {
       setSubmitting(false);
     }

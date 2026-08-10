@@ -22,8 +22,8 @@ const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'bd-e-apostille-secret-key-2026-mofa';
 
 // Increase payload limits for uploading base64 signatures/seals
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ limit: '15mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Admin authentication middleware
 const authenticateAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -154,31 +154,28 @@ app.post('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res
   try {
     const data = req.body;
 
-    // Field-level backend validation
-    const required = [
-      'applicantName'
-    ];
-
-    for (const field of required) {
-      if (!data[field] || String(data[field]).trim() === '') {
-        res.status(400).json({ success: false, message: `Field '${field}' is required.` });
-        return;
-      }
+    if (!data.applicantName || String(data.applicantName).trim() === '') {
+      res.status(400).json({ success: false, message: 'Candidate Name (applicantName) is required.' });
+      return;
     }
 
-    // Auto-generate verification ID if none supplied
+    // Auto-generate unique verification ID if none supplied
     let verificationId = data.id ? String(data.id).trim().toUpperCase() : '';
     if (!verificationId) {
-      const stamp = Math.floor(10000 + Math.random() * 90000); // 5 digits random
-      const year = data.issueDate ? new Date(data.issueDate).getFullYear() : new Date().getFullYear();
-      verificationId = `BD-AP-${year}-${stamp}`;
-    }
-
-    // Check uniqueness
-    const existing = dbService.getCertificateById(verificationId);
-    if (existing) {
-      res.status(409).json({ success: false, message: `A Certificate with Verification ID "${verificationId}" already exists.` });
-      return;
+      let attempts = 0;
+      do {
+        const stamp = Math.floor(10000 + Math.random() * 90000);
+        const year = data.issueDate ? new Date(data.issueDate).getFullYear() : new Date().getFullYear();
+        verificationId = `BD-AP-${year}-${stamp}`;
+        attempts++;
+      } while (dbService.getCertificateById(verificationId) && attempts < 25);
+    } else {
+      // Check uniqueness for custom provided ID
+      const existing = dbService.getCertificateById(verificationId);
+      if (existing) {
+        res.status(409).json({ success: false, message: `A Certificate with Verification ID "${verificationId}" already exists.` });
+        return;
+      }
     }
 
     const settings = dbService.getSettings();
@@ -197,7 +194,7 @@ app.post('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res
       boardName: data.boardName ? String(data.boardName).trim() : undefined,
       country: data.country ? String(data.country).trim() : 'Bangladesh',
       issueDate: data.issueDate ? String(data.issueDate) : new Date().toISOString().split('T')[0],
-      qrCodeDataUrl: data.qrCodeDataUrl || '', // Handled client-side or defaults
+      qrCodeDataUrl: data.qrCodeDataUrl || '',
       officerName: data.officerName ? String(data.officerName).trim() : '',
       officerDesignation: data.officerDesignation ? String(data.officerDesignation).trim() : '',
       signatureImageUrl: data.signatureImageUrl || settings.globalSignatureUrl,
@@ -216,26 +213,32 @@ app.post('/api/certificates', authenticateAdmin, (req: AuthenticatedRequest, res
       certificate: newCertificate
     });
   } catch (err: any) {
+    console.error('[API] Error creating certificate:', err);
     res.status(500).json({ success: false, message: err.message || 'Server error creating certificate' });
   }
 });
 
 // ADMIN: Update Certificate
 app.put('/api/certificates/:id', authenticateAdmin, (req: AuthenticatedRequest, res: Response) => {
-  const id = req.params.id;
-  const updatedData = req.body;
+  try {
+    const id = req.params.id;
+    const updatedData = req.body;
 
-  const success = dbService.updateCertificate(id, updatedData);
-  if (!success) {
-    res.status(404).json({ success: false, message: `Certificate with ID "${id}" not found.` });
-    return;
+    const success = dbService.updateCertificate(id, updatedData);
+    if (!success) {
+      res.status(404).json({ success: false, message: `Certificate with ID "${id}" not found in database.` });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Certificate updated successfully',
+      certificate: dbService.getCertificateById(id)
+    });
+  } catch (err: any) {
+    console.error('[API] Error updating certificate:', err);
+    res.status(500).json({ success: false, message: err.message || 'Server error updating certificate' });
   }
-
-  res.json({
-    success: true,
-    message: 'Certificate updated successfully',
-    certificate: dbService.getCertificateById(id)
-  });
 });
 
 // ADMIN: Delete Certificate
