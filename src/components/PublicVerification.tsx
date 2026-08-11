@@ -355,11 +355,13 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
                       <div key={certItem.id} className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-6 text-slate-800">
                         
                         {/* Title bar of document */}
-                        <div className="flex border-b pb-2 mb-2 items-center justify-between">
-                          <span className="text-[9.5px] font-black text-[#006a4e] uppercase bg-[#006a4e]/10 px-2.5 py-1 rounded-full">
+                        <div className="flex border-b border-gray-200 pb-2.5 mb-2 items-center justify-between flex-wrap gap-2">
+                          <span className="text-[10px] font-black text-[#006a4e] uppercase bg-[#006a4e]/10 px-3 py-1 rounded-full border border-[#006a4e]/20">
                             ATTACHMENT RECORD #{index + 1}
                           </span>
-                          <span className="text-[9.5px] font-semibold text-gray-400 font-mono select-all">ID: {certItem.id}</span>
+                          <span className="text-xs sm:text-sm font-extrabold text-slate-900 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+                            📜 {certItem.id || `Certificate ${index + 1}`}
+                          </span>
                         </div>
 
                         <div className="space-y-6">
