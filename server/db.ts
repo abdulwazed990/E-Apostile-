@@ -31,6 +31,124 @@ const DEFAULT_SIGNATURE = "";
 
 const DEFAULT_CERTIFICATES: Certificate[] = [
   {
+    id: "APO-TEST-001",
+    applicantName: "TEST USER A",
+    fatherName: "MD. HARUNUR RASHID",
+    motherName: "BEGUM ROKEYA",
+    dob: "1998-02-10",
+    certificateType: "Educational Certificate",
+    examinationName: "Diploma & Secondary Examinations",
+    rollNumber: "458921",
+    registrationNumber: "1510293847",
+    certificateNumber: "AP-2026-TEST001",
+    boardName: "Board of Intermediate and Secondary Education, Dhaka",
+    country: "United Kingdom",
+    issueDate: "2026-08-11",
+    qrCodeDataUrl: "",
+    officerName: "Md. Nazrul Islam",
+    officerDesignation: "Assistant Secretary (Consular)",
+    signatureImageUrl: "",
+    sealImageUrl: "",
+    createdDate: "2026-08-11T00:00:00.000Z",
+    status: "VERIFIED",
+    attachedCertificates: [
+      {
+        id: "SSC Certificate",
+        certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
+        attestations: [
+          {
+            id: "ATT-A1",
+            type: "Attested",
+            officerName: "Sarena Parvin Shawon",
+            officerDesignation: "Assistant Controller of Examinations",
+            date: "2026-08-08",
+            signatureImageUrl: ""
+          }
+        ]
+      },
+      {
+        id: "HSC Certificate",
+        certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
+        attestations: [
+          {
+            id: "ATT-A2",
+            type: "Attested",
+            officerName: "Sarena Parvin Shawon",
+            officerDesignation: "Assistant Controller of Examinations",
+            date: "2026-08-09",
+            signatureImageUrl: ""
+          }
+        ]
+      },
+      {
+        id: "Diploma Engineering Certificate",
+        certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
+        attestations: [
+          {
+            id: "ATT-A3",
+            type: "Verified and found correct",
+            officerName: "Dr. Md. Ahsan Habib",
+            officerDesignation: "Director (Technical Education)",
+            date: "2026-08-10",
+            signatureImageUrl: ""
+          }
+        ]
+      },
+      {
+        id: "Attestation Certificate",
+        certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
+        attestations: [
+          {
+            id: "ATT-A4",
+            type: "Verified and found correct",
+            officerName: "Md. Nazrul Islam",
+            officerDesignation: "Assistant Secretary (Consular)",
+            date: "2026-08-11",
+            signatureImageUrl: ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "APO-TEST-002",
+    applicantName: "TEST USER B",
+    fatherName: "ABDUL JABBAR",
+    motherName: "FATEMA BEGUM",
+    dob: "2000-05-20",
+    certificateType: "Educational Certificate",
+    examinationName: "B.Sc in Computer Science & Engineering",
+    rollNumber: "789012",
+    registrationNumber: "2020304050",
+    certificateNumber: "AP-2026-TEST002",
+    boardName: "University of Dhaka",
+    country: "Canada",
+    issueDate: "2026-08-11",
+    qrCodeDataUrl: "",
+    officerName: "Md. Nazrul Islam",
+    officerDesignation: "Assistant Secretary (Consular)",
+    signatureImageUrl: "",
+    sealImageUrl: "",
+    createdDate: "2026-08-11T00:00:00.000Z",
+    status: "VERIFIED",
+    attachedCertificates: [
+      {
+        id: "B.Sc Engineering Degree Certificate",
+        certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
+        attestations: [
+          {
+            id: "ATT-B1",
+            type: "Attested",
+            officerName: "Prof. Dr. M. A. Rahman",
+            officerDesignation: "Controller of Examinations, DU",
+            date: "2026-08-10",
+            signatureImageUrl: ""
+          }
+        ]
+      }
+    ]
+  },
+  {
     id: "APO-2026-0810-76402",
     applicantName: "ABDUL WAZED",
     fatherName: "ABDUL KARIM",
@@ -214,7 +332,13 @@ class DatabaseService {
     if (this.dbCache) return this.dbCache;
 
     try {
-      const fileToRead = fs.existsSync(DB_FILE) ? DB_FILE : path.join('/tmp', 'db.json');
+      const tmpFile = path.join('/tmp', 'db.json');
+      let fileToRead = DB_FILE;
+      if (fs.existsSync(tmpFile)) {
+        if (!fs.existsSync(DB_FILE) || fs.statSync(tmpFile).mtimeMs > fs.statSync(DB_FILE).mtimeMs) {
+          fileToRead = tmpFile;
+        }
+      }
       if (fs.existsSync(fileToRead)) {
         const content = fs.readFileSync(fileToRead, 'utf-8');
         const parsed = JSON.parse(content) as Schema;
