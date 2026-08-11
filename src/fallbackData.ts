@@ -13,7 +13,7 @@ export const FALLBACK_CERTIFICATES: Certificate[] = [
     "registrationNumber": "1510293847",
     "certificateNumber": "AP-2026-TEST001",
     "boardName": "Board of Intermediate and Secondary Education, Dhaka",
-    "country": "United Kingdom",
+    "country": "Bangladesh",
     "issueDate": "2026-08-11",
     "qrCodeDataUrl": "",
     "officerName": "Md. Nazrul Islam",
@@ -64,20 +64,6 @@ export const FALLBACK_CERTIFICATES: Certificate[] = [
             "signatureImageUrl": ""
           }
         ]
-      },
-      {
-        "id": "Attestation Certificate",
-        "certificateImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
-        "attestations": [
-          {
-            "id": "ATT-A4",
-            "type": "Verified and found correct",
-            "officerName": "Md. Nazrul Islam",
-            "officerDesignation": "Assistant Secretary (Consular)",
-            "date": "2026-08-11",
-            "signatureImageUrl": ""
-          }
-        ]
       }
     ]
   },
@@ -93,7 +79,7 @@ export const FALLBACK_CERTIFICATES: Certificate[] = [
     "registrationNumber": "2020304050",
     "certificateNumber": "AP-2026-TEST002",
     "boardName": "University of Dhaka",
-    "country": "Canada",
+    "country": "Bangladesh",
     "issueDate": "2026-08-11",
     "qrCodeDataUrl": "",
     "officerName": "Md. Nazrul Islam",
@@ -131,7 +117,7 @@ export const FALLBACK_CERTIFICATES: Certificate[] = [
     "registrationNumber": "9876543210",
     "certificateNumber": "AP-1786358676402",
     "boardName": "Board of Intermediate and Secondary Education, Dhaka",
-    "country": "United Kingdom",
+    "country": "Bangladesh",
     "issueDate": "2026-08-10",
     "qrCodeDataUrl": "",
     "officerName": "Md. Nazrul Islam",
@@ -151,14 +137,6 @@ export const FALLBACK_CERTIFICATES: Certificate[] = [
             "officerName": "Sarena Parvin Shawon",
             "officerDesignation": "Assistant Controller of Examinations",
             "date": "2026-08-09",
-            "signatureImageUrl": ""
-          },
-          {
-            "id": "ATT-76402",
-            "type": "Verified and found correct",
-            "officerName": "Md. Nazrul Islam",
-            "officerDesignation": "Assistant Secretary (Consular)",
-            "date": "2026-08-10",
             "signatureImageUrl": ""
           }
         ]
@@ -215,7 +193,7 @@ export const FALLBACK_CERTIFICATES: Certificate[] = [
     "registrationNumber": "1234567890",
     "certificateNumber": "AP-1786358650417",
     "boardName": "Board of Intermediate and Secondary Education, Dhaka",
-    "country": "United Kingdom",
+    "country": "Bangladesh",
     "issueDate": "2026-08-10",
     "qrCodeDataUrl": "",
     "officerName": "Md. Nazrul Islam",
@@ -253,7 +231,7 @@ export const FALLBACK_CERTIFICATES: Certificate[] = [
     "registrationNumber": "9876543210",
     "certificateNumber": "AP-1786358658374",
     "boardName": "Board of Intermediate and Secondary Education, Dhaka",
-    "country": "United Kingdom",
+    "country": "Bangladesh",
     "issueDate": "2026-08-11",
     "qrCodeDataUrl": "",
     "officerName": "Md. Nazrul Islam",
@@ -273,14 +251,6 @@ export const FALLBACK_CERTIFICATES: Certificate[] = [
             "officerName": "Sarena Parvin Shawon",
             "officerDesignation": "Assistant Controller of Examinations",
             "date": "2026-08-10",
-            "signatureImageUrl": ""
-          },
-          {
-            "id": "ATT-58374-2",
-            "type": "Verified and found correct",
-            "officerName": "Md. Nazrul Islam",
-            "officerDesignation": "Assistant Secretary (Consular)",
-            "date": "2026-08-11",
             "signatureImageUrl": ""
           }
         ]

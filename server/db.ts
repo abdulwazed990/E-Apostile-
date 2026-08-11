@@ -282,7 +282,7 @@ const DEFAULT_CERTIFICATES: Certificate[] = [
     registrationNumber: "9876543210",
     certificateNumber: "AP-1786358658374",
     boardName: "Board of Intermediate and Secondary Education, Dhaka",
-    country: "United Kingdom",
+    country: "Bangladesh",
     issueDate: "2026-08-11",
     qrCodeDataUrl: "",
     officerName: "Md. Nazrul Islam",
@@ -302,14 +302,6 @@ const DEFAULT_CERTIFICATES: Certificate[] = [
             officerName: "Sarena Parvin Shawon",
             officerDesignation: "Assistant Controller of Examinations",
             date: "2026-08-10",
-            signatureImageUrl: ""
-          },
-          {
-            id: "ATT-58374-2",
-            type: "Verified and found correct",
-            officerName: "Md. Nazrul Islam",
-            officerDesignation: "Assistant Secretary (Consular)",
-            date: "2026-08-11",
             signatureImageUrl: ""
           }
         ]
@@ -480,7 +472,7 @@ class DatabaseService {
         registrationNumber: "9876543210",
         certificateNumber: `AP-${cleanId}`,
         boardName: "Board of Intermediate and Secondary Education, Dhaka",
-        country: "United Kingdom",
+        country: "Bangladesh",
         issueDate: "2026-08-11",
         qrCodeDataUrl: "",
         officerName: "Md. Nazrul Islam",
@@ -500,14 +492,6 @@ class DatabaseService {
                 officerName: "Sarena Parvin Shawon",
                 officerDesignation: "Assistant Controller of Examinations",
                 date: "2026-08-10",
-                signatureImageUrl: ""
-              },
-              {
-                id: `ATT-${cleanId.slice(-5)}-2`,
-                type: "Verified and found correct",
-                officerName: "Md. Nazrul Islam",
-                officerDesignation: "Assistant Secretary (Consular)",
-                date: "2026-08-11",
                 signatureImageUrl: ""
               }
             ]

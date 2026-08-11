@@ -56,7 +56,7 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
     registrationNumber: '',
     certificateNumber: '',
     boardName: 'Dhaka',
-    country: 'United Kingdom',
+    country: 'Bangladesh',
     issueDate: new Date().toISOString().split('T')[0],
     officerName: 'Md. Nazrul Islam',
     officerDesignation: 'Assistant Secretary (Consular)',
