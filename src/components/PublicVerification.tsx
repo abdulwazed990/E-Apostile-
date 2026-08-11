@@ -30,25 +30,16 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Helper to load local storage certificates merged with static fallbacks
+  // Helper to load local storage certificates
   const getLocalCertificates = (): Certificate[] => {
     try {
       const stored = localStorage.getItem('MoFA_Certificates');
-      let storedList: Certificate[] = [];
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) storedList = parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
-      const merged = [...storedList];
-      for (const fb of FALLBACK_CERTIFICATES) {
-        if (!merged.some(c => c.id.toUpperCase() === fb.id.toUpperCase())) {
-          merged.push(fb);
-        }
-      }
-      return merged;
-    } catch (e) {
-      return FALLBACK_CERTIFICATES;
-    }
+    } catch (e) {}
+    return [];
   };
 
   // Fetch registered certificate database profiles for quick simulation select
@@ -101,13 +92,19 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
           setCustomDomain(data.customDomain || '');
           setLoading(false);
           return;
+        } else {
+          // Explicit API response that record was NOT found
+          setErrorMsg(data.message || `No matching verification record was found for Token / ID "${trimmedId}".`);
+          setCertificate(null);
+          setLoading(false);
+          return;
         }
       }
     } catch (err) {
-      console.log('API fetch failed, checking fallback storage');
+      console.log('API fetch failed, checking browser storage');
     }
 
-    // Secondary search: local storage + static fallback certificates
+    // Secondary local store search (MoFA_Certificates) - search local storage only if offline
     const localCerts = getLocalCertificates();
     const cleanSearch = trimmedId.replace(/[^A-Z0-9]/g, '');
 
@@ -126,59 +123,10 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
     if (match) {
       setCertificate(match);
       setCustomDomain('');
-      setLoading(false);
-      return;
+    } else {
+      setErrorMsg(`No matching verification record was found for Token / ID "${trimmedId}".`);
+      setCertificate(null);
     }
-
-    // Tertiary search: Dynamic fallback generator for valid Apostille ID formats
-    if (trimmedId.startsWith('APO-') || trimmedId.startsWith('BD-AP-') || trimmedId.startsWith('AP-') || cleanSearch.length >= 6) {
-      const dynamicCert: Certificate = {
-        id: trimmedId,
-        applicantName: "ABDUL WAZED",
-        fatherName: "ABDUL KARIM",
-        motherName: "ROKEYA BEGOM",
-        dob: "1995-05-15",
-        certificateType: "Educational Certificate",
-        examinationName: "HSC Examination & Academic Records",
-        rollNumber: "123456",
-        registrationNumber: "9876543210",
-        certificateNumber: `AP-${cleanSearch}`,
-        boardName: "Board of Intermediate and Secondary Education, Dhaka",
-        country: "Bangladesh",
-        issueDate: "2026-08-11",
-        qrCodeDataUrl: "",
-        officerName: "Md. Nazrul Islam",
-        officerDesignation: "Assistant Secretary (Consular)",
-        signatureImageUrl: "",
-        sealImageUrl: "",
-        createdDate: new Date().toISOString(),
-        status: "VERIFIED",
-        attachedCertificates: [
-          {
-            id: "HSC Educational Certificate & Marksheet",
-            certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
-            attestations: [
-              {
-                id: `ATT-${cleanSearch.slice(-5)}-1`,
-                type: "Attested",
-                officerName: "Sarena Parvin Shawon",
-                officerDesignation: "Assistant Controller of Examinations",
-                date: "2026-08-10",
-                signatureImageUrl: ""
-              }
-            ]
-          }
-        ]
-      };
-
-      setCertificate(dynamicCert);
-      setCustomDomain('');
-      setLoading(false);
-      return;
-    }
-
-    setErrorMsg(`No matching verification record was found for Token / ID "${trimmedId}".`);
-    setCertificate(null);
     setLoading(false);
   };
 
@@ -408,38 +356,32 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
                             ATTACHMENT RECORD #{index + 1}
                           </span>
                           <span className="text-xs sm:text-sm font-extrabold text-slate-900 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
-                            {certItem.id || `Certificate ${index + 1}`}
+                            📜 {certItem.id || `Certificate ${index + 1}`}
                           </span>
                         </div>
 
                         <div className="space-y-6">
                           
                           {/* Centered Attached Original Copy */}
-                          <div className="flex flex-col items-center w-full">
+                          <div className="flex flex-col items-center">
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2 self-start">Original Scanned Copy:</span>
                             
-                            {certItem.certificateImageUrl ? (
-                              <div 
-                                onClick={() => setLightboxImage(certItem.certificateImageUrl)}
-                                className="relative border border-gray-200 rounded-xl overflow-hidden bg-white w-full max-w-lg shadow-sm group cursor-zoom-in p-1.5 sm:p-2 flex items-center justify-center min-h-[220px]"
-                              >
-                                <img 
-                                  src={certItem.certificateImageUrl} 
-                                  alt={certItem.id || `Certificate scan ${index + 1}`}
-                                  className="w-full h-auto max-h-[550px] object-contain rounded transition-all group-hover:brightness-95 block mx-auto"
-                                  referrerPolicy="no-referrer"
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-all">
-                                  <span className="opacity-0 group-hover:opacity-100 bg-black/90 text-white rounded-lg text-[9px] font-black px-3 py-1.5 uppercase tracking-wide flex items-center gap-1 shadow-md">
-                                    <ZoomIn className="w-3.5 h-3.5" /> Enlarge Document copy
-                                  </span>
-                                </div>
+                            <div 
+                              onClick={() => { if (certItem.certificateImageUrl) setLightboxImage(certItem.certificateImageUrl); }}
+                              className="relative border border-gray-150 rounded-xl overflow-hidden bg-gray-50 h-64 sm:h-80 w-full max-w-md flex items-center justify-center group cursor-zoom-in shadow-inner"
+                            >
+                              <img 
+                                src={certItem.certificateImageUrl} 
+                                alt={`Certificate scan ${index + 1}`}
+                                className="max-h-full max-w-full object-contain filter transition-all group-hover:brightness-95"
+                                referrerPolicy="no-referrer"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 flex items-center justify-center transition-all bg-opacity-10">
+                                <span className="opacity-0 group-hover:opacity-100 bg-black/90 text-white rounded-lg text-[9px] font-black px-3 py-1.5 uppercase tracking-wide flex items-center gap-1 shadow-md">
+                                  <ZoomIn className="w-3.5 h-3.5" /> Enlarge Document copy
+                                </span>
                               </div>
-                            ) : (
-                              <div className="w-full max-w-lg p-6 bg-slate-50 border border-dashed border-gray-200 rounded-xl text-center text-xs text-gray-400 font-semibold">
-                                No attached document image available
-                              </div>
-                            )}
+                            </div>
                           </div>
 
                           {/* Attester physical signatures stacked sequentially */}

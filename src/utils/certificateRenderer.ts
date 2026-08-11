@@ -4,7 +4,6 @@
  */
 
 import { jsPDF } from 'jspdf';
-import QRCode from 'qrcode';
 import { Certificate } from '../types';
 
 /**
@@ -124,24 +123,11 @@ export async function renderCertificateToCanvas(
   const sealSrc = cert.sealImageUrl && cert.sealImageUrl.trim() ? cert.sealImageUrl : DEFAULT_MOFA_SEAL;
   const sigSrc = cert.signatureImageUrl && cert.signatureImageUrl.trim() ? cert.signatureImageUrl : DEFAULT_SIGNATURE_SVG;
 
-  let effectiveQrUrl = qrCodeUrl && qrCodeUrl.trim() ? qrCodeUrl : cert.qrCodeDataUrl;
-  if (!effectiveQrUrl || !effectiveQrUrl.trim()) {
-    try {
-      const domain = verificationDomain && verificationDomain.trim() ? verificationDomain : (typeof window !== 'undefined' ? window.location.origin : '');
-      let baseDomain = domain ? (domain.startsWith('http') ? domain : 'https://' + domain) : 'https://e-apostile-mygov-bangladesh.vercel.app';
-      if (baseDomain.endsWith('/')) baseDomain = baseDomain.slice(0, -1);
-      const targetVerifyUrl = `${baseDomain}/verify/${cert.id}`;
-      effectiveQrUrl = await QRCode.toDataURL(targetVerifyUrl, { margin: 1, width: 300 });
-    } catch (e) {
-      console.warn('QR code auto-generation warning:', e);
-    }
-  }
-
   const [watermarkImg, sealImg, sigImg, qrImg] = await Promise.all([
     loadImage(WATERMARK_URL),
     loadImage(sealSrc),
     loadImage(sigSrc),
-    effectiveQrUrl ? loadImage(effectiveQrUrl) : Promise.resolve(null)
+    qrCodeUrl ? loadImage(qrCodeUrl) : Promise.resolve(null)
   ]);
 
   // 3. Watermark Background
