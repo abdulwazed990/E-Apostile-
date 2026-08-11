@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 import { 
   FilePlus2, Database, Settings, ShieldCheck, Search, Trash2, Edit, Save, 
   X, RefreshCw, BadgeInfo, Image as ImageIcon, CheckCircle, KeyRound, Eye,
@@ -405,6 +406,16 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
       verificationId = `BD-AP-${year}-${stamp}`;
     }
 
+    let autoQrDataUrl = certForm.qrCodeDataUrl;
+    if (!autoQrDataUrl || !autoQrDataUrl.trim()) {
+      try {
+        const targetUrl = `${getBaseVerificationUrl()}/verify/${verificationId}`;
+        autoQrDataUrl = await QRCode.toDataURL(targetUrl, { margin: 1, width: 300 });
+      } catch (e) {
+        console.warn('Auto QR generation warning:', e);
+      }
+    }
+
     const finalCert: Certificate = {
       ...certForm,
       id: verificationId,
@@ -418,7 +429,8 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
       sealImageUrl: certForm.sealImageUrl || settings.globalSealUrl,
       country: certForm.country || 'United Kingdom',
       boardName: certForm.boardName || 'Dhaka',
-      certificateType: certForm.certificateType || 'Educational Certificate'
+      certificateType: certForm.certificateType || 'Educational Certificate',
+      qrCodeDataUrl: autoQrDataUrl || ''
     };
 
     const updateLocalStorage = (certToSave: Certificate) => {
