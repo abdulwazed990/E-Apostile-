@@ -92,26 +92,29 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
           setCustomDomain(data.customDomain || '');
           setLoading(false);
           return;
+        } else {
+          // Explicit API response that record was NOT found
+          setErrorMsg(data.message || `No matching verification record was found for Token / ID "${trimmedId}".`);
+          setCertificate(null);
+          setLoading(false);
+          return;
         }
       }
     } catch (err) {
       console.log('API fetch failed, checking browser storage');
     }
 
-    // Secondary local store search (MoFA_Certificates)
+    // Secondary local store search (MoFA_Certificates) - search local storage only if offline
     const localCerts = getLocalCertificates();
-    const allKnown = [...localCerts, ...FALLBACK_CERTIFICATES];
     const cleanSearch = trimmedId.replace(/[^A-Z0-9]/g, '');
 
-    const match = allKnown.find(c => {
-      const cId = c.id.trim().toUpperCase();
+    const match = localCerts.find(c => {
+      const cId = c.id ? c.id.trim().toUpperCase() : '';
       const cCleanId = cId.replace(/[^A-Z0-9]/g, '');
       const cCertNum = c.certificateNumber ? c.certificateNumber.trim().toUpperCase() : '';
       const cCleanCertNum = cCertNum.replace(/[^A-Z0-9]/g, '');
-      const cToken = (c as any).verificationToken ? (c as any).verificationToken.trim().toUpperCase() : '';
 
       return cId === trimmedId ||
-             (cToken && cToken === trimmedId) ||
              (cleanSearch.length > 3 && cCleanId === cleanSearch) ||
              (cCertNum && cCertNum === trimmedId) ||
              (cleanSearch.length > 3 && cCleanCertNum === cleanSearch);

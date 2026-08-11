@@ -29,29 +29,48 @@ export default function App() {
     
     let matchId = '';
     
-    // Mode A: Clean URL path (e.g., /verify/BD-AP-2026-12345, /BD-AP-2026-95851, or /repo-name/verify/BD-AP-2026-12345)
-    const verifyMatch = path.match(/\/(?:verify\/)?([A-Za-z0-9\-_]+)/i);
-    if (verifyMatch && verifyMatch[1]) {
-      const candidate = decodeURIComponent(verifyMatch[1].trim());
-      if (candidate && !['api', 'assets', 'index.html', 'favicon.ico', 'admin', 'login', 'dashboard'].includes(candidate.toLowerCase())) {
-        matchId = candidate;
+    // Mode A: Clean URL path (e.g., /verify/BD-AP-2026-12345 or /BD-AP-2026-95851)
+    if (path.toLowerCase().includes('/verify/')) {
+      const parts = path.split(/\/verify\//i);
+      if (parts[1]) {
+        const rawToken = parts[1].split('/')[0].split('?')[0].trim();
+        if (rawToken) {
+          matchId = decodeURIComponent(rawToken);
+        }
+      }
+    } else if (path !== '/' && path.length > 1) {
+      const segments = path.split('/').filter(Boolean);
+      if (segments.length > 0) {
+        const lastSeg = decodeURIComponent(segments[segments.length - 1].trim());
+        const reserved = ['api', 'assets', 'index.html', 'favicon.ico', 'admin', 'login', 'dashboard', 'verify', 'public', 'auth', 'register'];
+        if (lastSeg && !reserved.includes(lastSeg.toLowerCase())) {
+          matchId = lastSeg;
+        }
       }
     }
     
-    // Mode B: Hash routing fallback (e.g., #/verify/BD-AP-2026-12345, #BD-AP-2026-95851, or #verify/BD-AP-2026-12345)
+    // Mode B: Hash routing fallback (e.g., #/verify/BD-AP-2026-12345 or #BD-AP-2026-12345)
     if (!matchId && hash) {
-      const hashMatch = hash.match(/^(?:#\/verify\/|#verify\/|#\/|#)([A-Za-z0-9\-_]+)/i);
-      if (hashMatch && hashMatch[1]) {
-        const candidate = decodeURIComponent(hashMatch[1].trim());
-        if (candidate && !['verify', 'admin', 'login', 'dashboard'].includes(candidate.toLowerCase())) {
-          matchId = candidate;
+      if (hash.toLowerCase().includes('verify/')) {
+        const parts = hash.split(/verify\//i);
+        if (parts[1]) {
+          const rawToken = parts[1].split('/')[0].split('?')[0].trim();
+          if (rawToken) {
+            matchId = decodeURIComponent(rawToken);
+          }
+        }
+      } else {
+        const cleanHash = hash.replace(/^#\/?/, '').trim();
+        const reserved = ['verify', 'admin', 'login', 'dashboard', 'api'];
+        if (cleanHash && !reserved.includes(cleanHash.toLowerCase())) {
+          matchId = decodeURIComponent(cleanHash);
         }
       }
     }
     
     // Mode C: Query Parameter fallback (e.g., ?id=BD-AP-2026-12345 or ?verify=BD-AP-2026-12345)
     if (!matchId) {
-      const qId = searchParams.get('id') || searchParams.get('verify');
+      const qId = searchParams.get('id') || searchParams.get('verify') || searchParams.get('token');
       if (qId) {
         matchId = qId.trim();
       }

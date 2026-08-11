@@ -51,7 +51,30 @@ const DEFAULT_CERTIFICATES: Certificate[] = [
     sealImageUrl: "",
     createdDate: "2026-08-10T04:00:00.000Z",
     status: "VERIFIED",
-    attachedCertificates: []
+    attachedCertificates: [
+      {
+        id: "HSC Educational Certificate & Marksheet",
+        certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
+        attestations: [
+          {
+            id: "ATT-76401",
+            type: "Attested",
+            officerName: "Sarena Parvin Shawon",
+            officerDesignation: "Assistant Controller of Examinations",
+            date: "2026-08-09",
+            signatureImageUrl: ""
+          },
+          {
+            id: "ATT-76402",
+            type: "Verified and found correct",
+            officerName: "Md. Nazrul Islam",
+            officerDesignation: "Assistant Secretary (Consular)",
+            date: "2026-08-10",
+            signatureImageUrl: ""
+          }
+        ]
+      }
+    ]
   },
   {
     id: "APO-2026-0810-5472",
@@ -74,7 +97,22 @@ const DEFAULT_CERTIFICATES: Certificate[] = [
     sealImageUrl: "",
     createdDate: "2026-08-10T04:00:00.000Z",
     status: "VERIFIED",
-    attachedCertificates: []
+    attachedCertificates: [
+      {
+        id: "HSC Academic Record",
+        certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
+        attestations: [
+          {
+            id: "ATT-54721",
+            type: "Attested",
+            officerName: "Md. Golam Mostafa",
+            officerDesignation: "Deputy Controller of Examinations",
+            date: "2026-08-09",
+            signatureImageUrl: ""
+          }
+        ]
+      }
+    ]
   },
   {
     id: "BD-AP-2026-95851",
@@ -97,7 +135,22 @@ const DEFAULT_CERTIFICATES: Certificate[] = [
     sealImageUrl: "",
     createdDate: "2026-06-22T11:00:35.106Z",
     status: "VERIFIED",
-    attachedCertificates: []
+    attachedCertificates: [
+      {
+        id: "HSC Educational Certificate Copy",
+        certificateImageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Certificate_example.jpg/800px-Certificate_example.jpg",
+        attestations: [
+          {
+            id: "ATT-95851",
+            type: "Attested",
+            officerName: "Sarena Parvin Shawon",
+            officerDesignation: "Assistant Controller of Examinations",
+            date: "2026-06-21",
+            signatureImageUrl: ""
+          }
+        ]
+      }
+    ]
   }
 ];
 
@@ -180,6 +233,7 @@ class DatabaseService {
       }
     } catch (e) {
       console.warn('[DB] Error reading db file, falling back to cache:', e);
+      if (this.dbCache) return this.dbCache;
     }
 
     const salt = bcrypt.genSaltSync(10);
@@ -276,11 +330,19 @@ class DatabaseService {
   }
 
   public getSettings() {
-    const settings = this.readDb().settings;
-    if (settings && settings.customDomain === undefined) {
-      settings.customDomain = '';
+    const db = this.readDb();
+    if (!db || !db.settings) {
+      return {
+        defaultLogoUrl: DEFAULT_LOGO,
+        globalSealUrl: DEFAULT_SEAL,
+        globalSignatureUrl: DEFAULT_SIGNATURE,
+        customDomain: ''
+      };
     }
-    return settings;
+    if (db.settings.customDomain === undefined) {
+      db.settings.customDomain = '';
+    }
+    return db.settings;
   }
 
   public updateSettings(settings: Partial<Schema['settings']>) {

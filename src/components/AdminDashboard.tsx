@@ -361,21 +361,50 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
     });
   };
 
+  // Image compression helper to prevent oversized base64 strings and DB bloat
+  const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          } else {
+            resolve(String(event.target?.result || ''));
+          }
+        };
+        img.onerror = () => resolve(String(event.target?.result || ''));
+        img.src = String(event.target?.result || '');
+      };
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Image Upload Helper for standalone values
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, targetField: 'signatureImageUrl' | 'sealImageUrl') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'signatureImageUrl' | 'sealImageUrl') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setCertForm(prev => ({
-          ...prev,
-          [targetField]: String(event.target?.result)
-        }));
-      }
-    };
-    reader.readAsDataURL(file);
+    const compressed = await compressImage(file, 800, 0.85);
+    if (compressed) {
+      setCertForm(prev => ({
+        ...prev,
+        [targetField]: compressed
+      }));
+    }
   };
 
   // Form Submit Handler
@@ -1145,16 +1174,13 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
                             <input
                               type="file"
                               accept="image/*"
-                              onChange={(e) => {
+                              onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const r = new FileReader();
-                                r.onload = (event) => {
-                                  if (event.target?.result) {
-                                    updateAttachedCertificateImage(certIndex, String(event.target.result));
-                                  }
-                                };
-                                r.readAsDataURL(file);
+                                const compressed = await compressImage(file, 1200, 0.8);
+                                if (compressed) {
+                                  updateAttachedCertificateImage(certIndex, compressed);
+                                }
                               }}
                               className="w-full text-xs text-gray-500 bg-white border border-gray-150 rounded-lg p-0.5"
                             />
@@ -1262,16 +1288,13 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
                                     <input
                                       type="file"
                                       accept="image/*"
-                                      onChange={(e) => {
+                                      onChange={async (e) => {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
-                                        const r = new FileReader();
-                                        r.onload = (event) => {
-                                          if (event.target?.result) {
-                                            updateCertificateAttestation(certIndex, attIndex, 'signatureImageUrl', String(event.target.result));
-                                          }
-                                        };
-                                        r.readAsDataURL(file);
+                                        const compressed = await compressImage(file, 600, 0.85);
+                                        if (compressed) {
+                                          updateCertificateAttestation(certIndex, attIndex, 'signatureImageUrl', compressed);
+                                        }
                                       }}
                                       className="w-full text-xs text-gray-400 p-0.5 bg-white border rounded"
                                     />
@@ -1423,16 +1446,13 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      const r = new FileReader();
-                      r.onload = (ev) => {
-                        if (ev.target?.result) {
-                          setSettings(prev => ({ ...prev, globalSealUrl: String(ev.target?.result) }));
-                        }
-                      };
-                      r.readAsDataURL(file);
+                      const compressed = await compressImage(file, 600, 0.85);
+                      if (compressed) {
+                        setSettings(prev => ({ ...prev, globalSealUrl: compressed }));
+                      }
                     }}
                     className="w-full text-xs text-gray-500 bg-white border border-gray-200 rounded-xl p-1.5 focus:border-[#006a4e]"
                   />
@@ -1465,16 +1485,13 @@ export default function AdminDashboard({ token, onLogout }: AdminDashboardProps)
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      const r = new FileReader();
-                      r.onload = (ev) => {
-                        if (ev.target?.result) {
-                          setSettings(prev => ({ ...prev, globalSignatureUrl: String(ev.target?.result) }));
-                        }
-                      };
-                      r.readAsDataURL(file);
+                      const compressed = await compressImage(file, 600, 0.85);
+                      if (compressed) {
+                        setSettings(prev => ({ ...prev, globalSignatureUrl: compressed }));
+                      }
                     }}
                     className="w-full text-xs text-gray-500 bg-white border border-gray-200 rounded-xl p-1.5 focus:border-[#006a4e]"
                   />

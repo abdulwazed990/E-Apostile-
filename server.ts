@@ -119,7 +119,12 @@ app.get([
   '/certificates/verify/:id',
   '/api/verify/:id',
   '/verify/:id'
-], (req: Request, res: Response) => {
+], (req: Request, res: Response, next: NextFunction) => {
+  // If the browser is requesting HTML for page navigation (e.g. /verify/APO-2026-0810-76402), let Vite/SPA handle it
+  if (req.path.startsWith('/verify/') && !req.path.startsWith('/api/') && req.accepts('html') && !req.xhr && req.headers.accept?.includes('text/html')) {
+    return next();
+  }
+
   const id = req.params.id;
   const certificate = dbService.getCertificateById(id);
 
@@ -132,7 +137,7 @@ app.get([
     success: true,
     message: '✓ Verified Certificate',
     certificate,
-    customDomain: dbService.getSettings().customDomain || ''
+    customDomain: dbService.getSettings()?.customDomain || ''
   });
 });
 
@@ -194,10 +199,36 @@ const handleRegistration = (req: AuthenticatedRequest, res: Response) => {
         attempts++;
       } while (dbService.getCertificateById(verificationId) && attempts < 25);
     } else {
-      // Check uniqueness for custom provided ID
+      // If custom ID already exists in DB, seamlessly update it with new fields & attachedCertificates
       const existing = dbService.getCertificateById(verificationId);
       if (existing) {
-        res.status(409).json({ success: false, message: `This account or certificate record with Verification ID "${verificationId}" already exists.` });
+        const updatePayload: Partial<Certificate> = {
+          applicantName: String(name).trim().toUpperCase(),
+          fatherName: data.fatherName ? String(data.fatherName).trim().toUpperCase() : existing.fatherName,
+          motherName: data.motherName ? String(data.motherName).trim().toUpperCase() : existing.motherName,
+          dob: data.dob ? String(data.dob) : existing.dob,
+          certificateType: data.certificateType ? String(data.certificateType) : existing.certificateType,
+          examinationName: data.examinationName ? String(data.examinationName).trim() : existing.examinationName,
+          rollNumber: data.rollNumber ? String(data.rollNumber).trim() : existing.rollNumber,
+          registrationNumber: data.registrationNumber ? String(data.registrationNumber).trim() : existing.registrationNumber,
+          certificateNumber: data.certificateNumber ? String(data.certificateNumber).trim() : existing.certificateNumber,
+          boardName: data.boardName ? String(data.boardName).trim() : existing.boardName,
+          country: data.country ? String(data.country).trim() : existing.country,
+          issueDate: data.issueDate ? String(data.issueDate) : existing.issueDate,
+          officerName: data.officerName ? String(data.officerName).trim() : existing.officerName,
+          officerDesignation: data.officerDesignation ? String(data.officerDesignation).trim() : existing.officerDesignation,
+          signatureImageUrl: data.signatureImageUrl || existing.signatureImageUrl,
+          sealImageUrl: data.sealImageUrl || existing.sealImageUrl,
+          attachedCertificates: data.attachedCertificates || existing.attachedCertificates || [],
+          fullyAttestedDocumentUrl: data.fullyAttestedDocumentUrl || existing.fullyAttestedDocumentUrl || ''
+        };
+        dbService.updateCertificate(verificationId, updatePayload);
+        const updatedRecord = dbService.getCertificateById(verificationId);
+        res.status(200).json({
+          success: true,
+          message: 'Certificate updated successfully',
+          certificate: updatedRecord
+        });
         return;
       }
     }
