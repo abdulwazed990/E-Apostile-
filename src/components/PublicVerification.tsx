@@ -190,9 +190,7 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
       setCanvasLoading(true);
       
       const baseDomain = getBaseVerificationUrl();
-      const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-        `${baseDomain}/verify/${certificate.id}`
-      )}`;
+      const qrDataUrl = certificate.qrCodeDataUrl || '';
 
       const timer = setTimeout(async () => {
         try {
@@ -215,9 +213,7 @@ export default function PublicVerification({ initialId, onClearInitialId, onNavi
     if (!certificate) return;
     const baseDomain = getBaseVerificationUrl();
     const hostOnly = getHostnameOnly(baseDomain);
-    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
-      `${baseDomain}/verify/${certificate.id}`
-    )}`;
+    const qrDataUrl = certificate.qrCodeDataUrl || '';
     await downloadCanvasAsPdf(certificate, qrDataUrl, hostOnly, `MoFA_e-Apostille_${certificate.id}.pdf`);
   };
 

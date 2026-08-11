@@ -279,18 +279,35 @@ export async function renderCertificateToCanvas(
   ctx.fillText('Location: Ministry of Foreign Affairs, Dhaka, BD', colXLabel, digitalSigY + 75);
 
   // Dedicated QR Code Area in Bottom Right with Quiet Zone
+  const qrSize = 190;
+  const qrX = 710;
+  const qrY = 1100;
+
+  // Solid quiet zone background to protect QR from any background strokes
+  ctx.save();
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
+
   if (qrImg) {
-    const qrSize = 190;
-    const qrX = 710;
-    const qrY = 1100;
-
-    // Solid quiet zone background to protect QR from any background strokes
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
-
-    // Draw crisp QR code image
+    // Draw crisp uploaded QR code image
     ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+  } else {
+    // Render clean reserved QR Code box when not uploaded yet
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 5]);
+    ctx.strokeRect(qrX, qrY, qrSize, qrSize);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 10pt sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('QR CODE AREA', qrX + qrSize / 2, qrY + qrSize / 2 - 8);
+    ctx.font = 'italic 8pt sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('(Upload QR from Admin)', qrX + qrSize / 2, qrY + qrSize / 2 + 10);
   }
+  ctx.restore();
 
   // 10. Document Footnotes strictly constrained to prevent any QR overlap
   ctx.fillStyle = '#475569';

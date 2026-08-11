@@ -44,8 +44,7 @@ export default function ApostilleMainBoard({ certificate, baseDomain }: Apostill
 
   const currentBase = getEnvBase() || baseDomain || (typeof window !== 'undefined' ? window.location.origin : '');
   const hostOnly = getHostnameOnly(currentBase);
-  const verifyUrl = `${currentBase}/verify/${certificate.id}`;
-  const qrCodeDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(verifyUrl)}`;
+  const qrCodeDataUrl = certificate.qrCodeDataUrl || '';
 
   useEffect(() => {
     let isMounted = true;
